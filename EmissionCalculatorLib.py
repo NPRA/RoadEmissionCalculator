@@ -20,7 +20,8 @@ class EmissionCalculatorLib:
         self.calculate_fc = True
         self.paths = []
         self.emissionJson = EmissionsJsonReader()
-
+        # self.vehicle_load = "50"
+        # self.vehicle_load = self.emissionJson.load
         # private values
         self.__pollutants = ["NOx", "CO", "HC", "PM", "FC"]
         self.__emissions_for_pollutant = {}
@@ -50,8 +51,11 @@ class EmissionCalculatorLib:
                 self.__emissions_for_pollutant[pollutant_key].append([])
 
     def get_json_from_url(self):
+        load = self.emissionJson.load
+        print "Vehicle load: " + load
+
         # url = "http://multirit.triona.se/routingService_v1_0/routingService?barriers=&format=json&height=4.5&lang=nb-no&length=12&stops=270337.81,7041814.57%3B296378.67,7044118.5&weight=50&geometryformat=isoz"
-        url = "http://multirit.triona.se/routingService_v1_0/routingService?barriers=&format=json&height=4.5&lang=nb-no&length=12&stops="+self.coordinates+"&weight=50&geometryformat=isoz"
+        url = "http://multirit.triona.se/routingService_v1_0/routingService?barriers=&format=json&height=4.5&lang=nb-no&length=12&stops="+self.coordinates+"&weight="+load+"&geometryformat=isoz"
         # url with 3 roads from Oslo to Molde
         # url = "http://multirit.triona.se/routingService_v1_0/routingService?barriers=&format=json&height=4.5&lang=nb-no&length=12&stops=262210.96,6649335.15%3B96311.150622257,6969883.5407672&weight=50&geometryformat=isoz"
         response = urlopen(url)

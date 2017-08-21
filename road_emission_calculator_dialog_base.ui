@@ -295,7 +295,7 @@
   <widget class="QComboBox" name="cmbBoxType">
    <property name="geometry">
     <rect>
-     <x>100</x>
+     <x>110</x>
      <y>130</y>
      <width>211</width>
      <height>26</height>
@@ -313,6 +313,98 @@
    </property>
    <property name="text">
     <string>Type:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_8">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>160</y>
+     <width>71</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>SSC Name:</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="cmbBoxSscName">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>160</y>
+     <width>211</width>
+     <height>26</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="cmbBoxSubsegment">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>190</y>
+     <width>211</width>
+     <height>26</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_9">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>190</y>
+     <width>81</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Subsegment:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_10">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>220</y>
+     <width>81</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>TEC Name:</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="cmbBoxTecName">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>220</y>
+     <width>211</width>
+     <height>26</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_11">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>250</y>
+     <width>60</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Load:</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="cmbBoxLoad">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>250</y>
+     <width>104</width>
+     <height>26</height>
+    </rect>
    </property>
   </widget>
  </widget>

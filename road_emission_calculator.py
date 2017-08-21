@@ -102,7 +102,10 @@ class RoadEmissionCalculator:
         self.dlg.btnGetRoads.clicked.connect(self.get_roads)
         self.dlg.btnGetEmissions.clicked.connect(self.get_emissions)
         self.dlg.cmbBoxType.currentIndexChanged.connect(self.set_vehicle_type)
-
+        self.dlg.cmbBoxSscName.currentIndexChanged.connect(self.set_vehicle_ssc)
+        self.dlg.cmbBoxSubsegment.currentIndexChanged.connect(self.set_vehicle_subsegment)
+        self.dlg.cmbBoxTecName.currentIndexChanged.connect(self.set_vehicle_tec)
+        self.dlg.cmbBoxLoad.currentIndexChanged.connect(self.set_vehicle_load)
         # self.clickTool.canvasClicked.connect(self.handleMouseDown)
 
     # noinspection PyMethodMayBeStatic
@@ -222,7 +225,29 @@ class RoadEmissionCalculator:
         self.canvas.unsetMapTool(self.mapTool)
 
     def set_vehicle_type(self):
-        print self.dlg.cmbBoxType.currentText()
+        self.emission_calculator.emissionJson.set_type(self.dlg.cmbBoxType.currentText())
+        self.dlg.cmbBoxSscName.clear()
+        self.dlg.cmbBoxSscName.addItems(self.emission_calculator.emissionJson.get_ssc_names())
+
+    def set_vehicle_ssc(self):
+        self.emission_calculator.emissionJson.set_ssc_name(self.dlg.cmbBoxSscName.currentText())
+        self.dlg.cmbBoxSubsegment.clear()
+        self.dlg.cmbBoxSubsegment.addItems(self.emission_calculator.emissionJson.get_subsegment())
+
+    def set_vehicle_subsegment(self):
+        self.emission_calculator.emissionJson.set_subsegment(self.dlg.cmbBoxSubsegment.currentText())
+        self.dlg.cmbBoxTecName.clear()
+        self.dlg.cmbBoxTecName.addItems(self.emission_calculator.emissionJson.get_tec_names())
+        if self.dlg.cmbBoxTecName.count() == 0 or self.dlg.cmbBoxTecName.count() == 1:
+            self.dlg.cmbBoxTecName.setEnabled(False)
+        else:
+            self.dlg.cmbBoxTecName.setEnabled(True)
+
+    def set_vehicle_tec(self):
+        self.emission_calculator.emissionJson.set_tec_name(self.dlg.cmbBoxTecName.currentText())
+
+    def set_vehicle_load(self):
+        self.emission_calculator.emissionJson.set_load(self.dlg.cmbBoxLoad.currentText())
 
     def end_add_point(self):
         self.canvas.unsetMapTool(self.mapTool)
@@ -302,9 +327,8 @@ class RoadEmissionCalculator:
     def run(self):
         """Run method that performs all the real work"""
 
-        types = self.emission_calculator.emissionJson.get_types()
-        self.dlg.cmbBoxType.addItems(types)
-
+        self.dlg.cmbBoxType.addItems(self.emission_calculator.emissionJson.get_types())
+        self.dlg.cmbBoxLoad.addItems(["0", "50", "100"])
         # show the dialog
         self.dlg.show()
         # Run the dialog event loop
