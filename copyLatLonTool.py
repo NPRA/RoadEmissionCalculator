@@ -150,17 +150,19 @@ class CopyLatLonTool(QgsMapTool):
         format it, and copy it to the clipboard.'''
         try:
             pt = self.toMapCoordinates(event.pos())
-            if self.point_name == "Start point":
+            if self.point_name == "Start_point":
                 self.dlg.lblStartPoint.setText(str(round(pt.x(),2)) + "," + str(round(pt.y(),2)))
 
-            if self.point_name == "End point":
+            if self.point_name == "End_point":
                 self.dlg.lblEndPoint.setText(str(round(pt.x(),2)) + "," + str(round(pt.y(),2)))
 
             ## create an empty memory layer
             vl = QgsVectorLayer("Point", self.point_name, "memory")
             ## define and add a field ID to memory layer "myLayer"
             provider = vl.dataProvider()
-            provider.addAttributes([QgsField("ID", QVariant.Int)])
+            idLayer = QVariant.Int
+            print idLayer
+            provider.addAttributes([QgsField("ID", idLayer)])
             ## create a new feature for the layer "myLayer"
             ft = QgsFeature()
             ## set the value 1 to the new field "ID"
@@ -171,6 +173,9 @@ class CopyLatLonTool(QgsMapTool):
             provider.addFeatures([ft])
             ## add layer to the registry and over the map canvas
             QgsMapLayerRegistry.instance().addMapLayer(vl)
+
+            self.canvas.unsetMapTool(self)
+            self.canvas.setCursor(Qt.ArrowCursor)
 
             # if self.capture4326:
             #     canvasCRS = self.canvas.mapSettings().destinationCrs()

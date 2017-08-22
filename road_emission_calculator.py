@@ -99,6 +99,9 @@ class RoadEmissionCalculator:
 
         self.dlg.btnAddStartPoint.clicked.connect(self.add_start_point)
         self.dlg.btnAddEndPoint.clicked.connect(self.add_end_point)
+        self.dlg.btnRemoveStartPoint.clicked.connect(self.remove_start_point)
+        self.dlg.btnRemoveEndPoint.clicked.connect(self.remove_end_point)
+
         self.dlg.btnGetRoads.clicked.connect(self.get_roads)
         self.dlg.btnGetEmissions.clicked.connect(self.get_emissions)
         self.dlg.cmbBoxType.currentIndexChanged.connect(self.set_vehicle_type)
@@ -212,6 +215,11 @@ class RoadEmissionCalculator:
 
         self.settingsDialog = SettingsWidget(self, self.iface, self.iface.mainWindow())
         self.mapTool = CopyLatLonTool(self.settingsDialog, self.iface, self.dlg)
+        self.dlg.btnAddStartPoint.setIcon(QIcon(os.path.dirname(__file__) + "/images/pencil_64.png"))
+        self.dlg.btnAddEndPoint.setIcon(QIcon(os.path.dirname(__file__) + "/images/pencil_64.png"))
+        self.dlg.btnRemoveStartPoint.setIcon(QIcon(os.path.dirname(__file__) + "/images/trash_64.png"))
+        self.dlg.btnRemoveEndPoint.setIcon(QIcon(os.path.dirname(__file__) + "/images/trash_64.png"))
+        self.dlg.textEditSummary.setReadOnly(True)
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -253,14 +261,35 @@ class RoadEmissionCalculator:
         self.canvas.unsetMapTool(self.mapTool)
         self.canvas.setCursor(Qt.ArrowCursor)
 
+    def set_new_point(self, point_name):
+        self.mapTool.point_name = point_name
+        self.canvas.setMapTool(self.mapTool)
 
     def add_start_point(self):
-        self.mapTool.point_name = "Start point"
-        self.canvas.setMapTool(self.mapTool)
+        # only one start point can be in canvas/legend
+        self.remove_start_point()
+        self.set_new_point("Start_point")
 
     def add_end_point(self):
-        self.mapTool.point_name = "End point"
-        self.canvas.setMapTool(self.mapTool)
+        # only one end point can be in canvas/legend
+        self.remove_end_point()
+        self.set_new_point("End_point")
+
+    @staticmethod
+    def remove_layer(id_name):
+        lrs = QgsMapLayerRegistry.instance().mapLayers()
+        for i in range(len(lrs.keys())):
+            if id_name in lrs.keys()[i]:
+                print (lrs.keys()[i])
+                QgsMapLayerRegistry.instance().removeMapLayer(lrs.keys()[i])
+
+    def remove_start_point(self):
+        self.dlg.lblStartPoint.setText("0,0")
+        self.remove_layer("Start_point")
+
+    def remove_end_point(self):
+        self.dlg.lblEndPoint.setText("0,0")
+        self.remove_layer("End_point")
 
     'set new Layers to use the Project-CRS'
 
@@ -276,6 +305,9 @@ class RoadEmissionCalculator:
 
     def get_roads(self):
         # print self.dlg.lblStartPoint.text()+";"+self.dlg.lblEndPoint.text()
+        self.remove_layer("Route")
+        self.dlg.textEditSummary.clear()
+        # self.dlg.textEditSummary.append("Test")
 
         self.emission_calculator.coordinates = self.dlg.lblStartPoint.text() + ";" + self.dlg.lblEndPoint.text()
         self.emission_calculator.get_json_from_url()
@@ -283,6 +315,15 @@ class RoadEmissionCalculator:
         paths = self.emission_calculator.paths
 
         for j in range(len(paths)):
+
+            self.dlg.textEditSummary.append("Route" + str(j + 1) + ":")
+            distance = self.emission_calculator.atr_distances[j]/1000
+            hours, minutes = divmod(self.emission_calculator.atr_times[j], 60)
+            hours = int(hours)
+            minutes = int(minutes)
+            self.dlg.textEditSummary.append("Length: " + str(distance) + " km, driving time: " + str(hours) + " hours and " + str(minutes) + " minutes." )
+            self.dlg.textEditSummary.append("")
+
             ## create an empty memory layer
             vl = QgsVectorLayer("LineString", "Route" + str(j + 1), "memory")
             ## define and add a field ID to memory layer "Route"
@@ -322,6 +363,27 @@ class RoadEmissionCalculator:
         self.emission_calculator.cumulative = self.dlg.checkBoxCumulative.isChecked()
 
         self.emission_calculator.calculate_emissions()
+
+        # update summary tab with data
+
+        statistics = self.emission_calculator.statistics
+
+        self.dlg.textEditSummary.append("Emission results:")
+        self.dlg.textEditSummary.append("")
+        for i in range(len(statistics)):
+            self.dlg.textEditSummary.append("Route" + str(i + 1) + ":")
+            if "NOx" in statistics[i]:
+                self.dlg.textEditSummary.append("NOx: " + str(statistics[i]['NOx']))
+            if "CO" in statistics[i]:
+                self.dlg.textEditSummary.append("CO: " + str(statistics[i]['CO']))
+            if "HC" in statistics[i]:
+                self.dlg.textEditSummary.append("HC: " + str(statistics[i]['HC']))
+            if "PM" in statistics[i]:
+                self.dlg.textEditSummary.append("PM: " + str(statistics[i]['PM']))
+            if "FC" in statistics[i]:
+                self.dlg.textEditSummary.append("FC: " + str(statistics[i]['FC']))
+            self.dlg.textEditSummary.append("")
+
 
 
     def run(self):
