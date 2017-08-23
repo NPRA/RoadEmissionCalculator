@@ -93,9 +93,7 @@ class RoadEmissionCalculator:
         self.dlg.checkBoxPm.setChecked(True)
         self.dlg.checkBoxFc.setChecked(True)
 
-        self.dlg.checkBoxCumulative.setChecked(True)
-
-        self.dlg.btnEndAddPoint.clicked.connect(self.end_add_point)
+        # self.dlg.checkBoxCumulative.setChecked(True)
 
         self.dlg.btnAddStartPoint.clicked.connect(self.add_start_point)
         self.dlg.btnAddEndPoint.clicked.connect(self.add_end_point)
@@ -109,6 +107,7 @@ class RoadEmissionCalculator:
         self.dlg.cmbBoxSubsegment.currentIndexChanged.connect(self.set_vehicle_subsegment)
         self.dlg.cmbBoxTecName.currentIndexChanged.connect(self.set_vehicle_tec)
         self.dlg.cmbBoxLoad.currentIndexChanged.connect(self.set_vehicle_load)
+        self.dlg.checkBoxShowInGraph.clicked.connect(self.activate_cumulative)
         # self.clickTool.canvasClicked.connect(self.handleMouseDown)
 
     # noinspection PyMethodMayBeStatic
@@ -220,6 +219,12 @@ class RoadEmissionCalculator:
         self.dlg.btnRemoveStartPoint.setIcon(QIcon(os.path.dirname(__file__) + "/images/trash_64.png"))
         self.dlg.btnRemoveEndPoint.setIcon(QIcon(os.path.dirname(__file__) + "/images/trash_64.png"))
         self.dlg.textEditSummary.setReadOnly(True)
+        self.dlg.lineEditStartX.setReadOnly(True)
+        self.dlg.lineEditStartY.setReadOnly(True)
+        self.dlg.lineEditEndX.setReadOnly(True)
+        self.dlg.lineEditEndY.setReadOnly(True)
+        self.activate_cumulative()
+        self.activate_group_box_calculator(False)
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -257,9 +262,11 @@ class RoadEmissionCalculator:
     def set_vehicle_load(self):
         self.emission_calculator.emissionJson.set_load(self.dlg.cmbBoxLoad.currentText())
 
-    def end_add_point(self):
-        self.canvas.unsetMapTool(self.mapTool)
-        self.canvas.setCursor(Qt.ArrowCursor)
+    def activate_cumulative(self):
+        self.dlg.checkBoxCumulative.setEnabled(self.dlg.checkBoxShowInGraph.isChecked())
+
+    def activate_group_box_calculator(self, value):
+        self.dlg.groupBoxCalculator.setEnabled(value)
 
     def set_new_point(self, point_name):
         self.mapTool.point_name = point_name
@@ -284,12 +291,18 @@ class RoadEmissionCalculator:
                 QgsMapLayerRegistry.instance().removeMapLayer(lrs.keys()[i])
 
     def remove_start_point(self):
-        self.dlg.lblStartPoint.setText("0,0")
+        # self.dlg.lblStartPoint.setText("0,0")
+        self.dlg.lineEditStartX.setText("")
+        self.dlg.lineEditStartY.setText("")
         self.remove_layer("Start_point")
+        self.activate_group_box_calculator(False)
 
     def remove_end_point(self):
-        self.dlg.lblEndPoint.setText("0,0")
+        # self.dlg.lblEndPoint.setText("0,0")
+        self.dlg.lineEditEndX.setText("")
+        self.dlg.lineEditEndY.setText("")
         self.remove_layer("End_point")
+        self.activate_group_box_calculator(False)
 
     'set new Layers to use the Project-CRS'
 
@@ -309,7 +322,9 @@ class RoadEmissionCalculator:
         self.dlg.textEditSummary.clear()
         # self.dlg.textEditSummary.append("Test")
 
-        self.emission_calculator.coordinates = self.dlg.lblStartPoint.text() + ";" + self.dlg.lblEndPoint.text()
+        # self.emission_calculator.coordinates = self.dlg.lblStartPoint.text() + ";" + self.dlg.lblEndPoint.text()
+        self.emission_calculator.coordinates = self.dlg.lineEditStartX.text() + "," + self.dlg.lineEditStartY.text() + \
+                                               ";" + self.dlg.lineEditEndX.text() + "," + self.dlg.lineEditEndY.text()
         self.emission_calculator.get_json_from_url()
 
         paths = self.emission_calculator.paths
@@ -352,6 +367,8 @@ class RoadEmissionCalculator:
             ## add layer to the registry and over the map canvas
             QgsMapLayerRegistry.instance().addMapLayer(vl)
 
+        self.activate_group_box_calculator(True)
+
     def get_emissions(self):
 
         self.emission_calculator.calculate_nox = self.dlg.checkBoxNox.isChecked()
@@ -360,7 +377,10 @@ class RoadEmissionCalculator:
         self.emission_calculator.calculate_pm = self.dlg.checkBoxPm.isChecked()
         self.emission_calculator.calculate_fc = self.dlg.checkBoxFc.isChecked()
 
+        self.emission_calculator.show_in_graph = self.dlg.checkBoxShowInGraph.isChecked()
         self.emission_calculator.cumulative = self.dlg.checkBoxCumulative.isChecked()
+
+
 
         self.emission_calculator.calculate_emissions()
 

@@ -151,10 +151,14 @@ class CopyLatLonTool(QgsMapTool):
         try:
             pt = self.toMapCoordinates(event.pos())
             if self.point_name == "Start_point":
-                self.dlg.lblStartPoint.setText(str(round(pt.x(),2)) + "," + str(round(pt.y(),2)))
+                # self.dlg.lblStartPoint.setText(str(round(pt.x(),2)) + "," + str(round(pt.y(),2)))
+                self.dlg.lineEditStartX.setText(str(round(pt.x(),2)))
+                self.dlg.lineEditStartY.setText(str(round(pt.y(),2)))
 
             if self.point_name == "End_point":
-                self.dlg.lblEndPoint.setText(str(round(pt.x(),2)) + "," + str(round(pt.y(),2)))
+                # self.dlg.lblEndPoint.setText(str(round(pt.x(),2)) + "," + str(round(pt.y(),2)))
+                self.dlg.lineEditEndX.setText(str(round(pt.x(), 2)))
+                self.dlg.lineEditEndY.setText(str(round(pt.y(), 2)))
 
             ## create an empty memory layer
             vl = QgsVectorLayer("Point", self.point_name, "memory")
