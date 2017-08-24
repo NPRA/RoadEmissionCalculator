@@ -411,18 +411,18 @@
        <widget class="QLabel" name="label_11">
         <property name="minimumSize">
          <size>
-          <width>80</width>
+          <width>40</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>80</width>
+          <width>40</width>
           <height>16777215</height>
          </size>
         </property>
         <property name="text">
-         <string>Vehicle load:</string>
+         <string>Load:</string>
         </property>
        </widget>
       </item>
@@ -443,6 +443,39 @@
        </widget>
       </item>
       <item row="0" column="2">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Height:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QLineEdit" name="lineEditHeight">
+        <property name="minimumSize">
+         <size>
+          <width>50</width>
+          <height>21</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>50</width>
+          <height>21</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QLineEdit{border: 1px solid lightgrey; border-radius:5px; }</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Length:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="6">
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -454,6 +487,25 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item row="0" column="5">
+       <widget class="QLineEdit" name="lineEditLength">
+        <property name="minimumSize">
+         <size>
+          <width>50</width>
+          <height>21</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>50</width>
+          <height>21</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QLineEdit{border: 1px solid lightgrey; border-radius:5px; }</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>

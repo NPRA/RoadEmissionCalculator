@@ -110,6 +110,10 @@ class RoadEmissionCalculator:
         self.dlg.checkBoxShowInGraph.clicked.connect(self.activate_cumulative)
         # self.clickTool.canvasClicked.connect(self.handleMouseDown)
 
+        # init with default values
+        self.dlg.lineEditLength.setText(self.emission_calculator.length)
+        self.dlg.lineEditHeight.setText(self.emission_calculator.height)
+
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
@@ -325,49 +329,55 @@ class RoadEmissionCalculator:
         # self.emission_calculator.coordinates = self.dlg.lblStartPoint.text() + ";" + self.dlg.lblEndPoint.text()
         self.emission_calculator.coordinates = self.dlg.lineEditStartX.text() + "," + self.dlg.lineEditStartY.text() + \
                                                ";" + self.dlg.lineEditEndX.text() + "," + self.dlg.lineEditEndY.text()
+        self.emission_calculator.length = self.dlg.lineEditLength.text()
+        self.emission_calculator.height = self.dlg.lineEditHeight.text()
         self.emission_calculator.get_json_from_url()
 
         paths = self.emission_calculator.paths
+        if len(paths) > 0:
+            for j in range(len(paths)):
 
-        for j in range(len(paths)):
+                self.dlg.textEditSummary.append("Route" + str(j + 1) + ":")
+                distance = self.emission_calculator.atr_distances[j]/1000
+                hours, minutes = divmod(self.emission_calculator.atr_times[j], 60)
+                hours = int(hours)
+                minutes = int(minutes)
+                self.dlg.textEditSummary.append("Length: " + str(distance) + " km, driving time: " + str(hours) + " hours and " + str(minutes) + " minutes." )
+                self.dlg.textEditSummary.append("")
 
-            self.dlg.textEditSummary.append("Route" + str(j + 1) + ":")
-            distance = self.emission_calculator.atr_distances[j]/1000
-            hours, minutes = divmod(self.emission_calculator.atr_times[j], 60)
-            hours = int(hours)
-            minutes = int(minutes)
-            self.dlg.textEditSummary.append("Length: " + str(distance) + " km, driving time: " + str(hours) + " hours and " + str(minutes) + " minutes." )
+                ## create an empty memory layer
+                vl = QgsVectorLayer("LineString", "Route" + str(j + 1), "memory")
+                ## define and add a field ID to memory layer "Route"
+                provider = vl.dataProvider()
+                provider.addAttributes([QgsField("ID", QVariant.Int)])
+                ## create a new feature for the layer "Route"
+                ft = QgsFeature()
+                ## set the value 1 to the new field "ID"
+                ft.setAttributes([1])
+                line_points = []
+                for i in range(len(paths[j])):
+                    # if j == 0:
+                    if (i + 1) < len(paths[j]):
+                        line_points.append(QgsPoint(paths[j][i][0], paths[j][i][1]))
+                ## set the geometry defined from the point X: 50, Y: 100
+                ft.setGeometry(QgsGeometry.fromPolyline(line_points))
+                ## finally insert the feature
+                provider.addFeatures([ft])
+
+                ## set color
+                symbols = vl.rendererV2().symbols()
+                sym = symbols[0]
+                # sym.setColor(QColor.fromRgb(255, 0, 0))
+                sym.setWidth(2)
+
+                ## add layer to the registry and over the map canvas
+                QgsMapLayerRegistry.instance().addMapLayer(vl)
+
+            self.activate_group_box_calculator(True)
+        else:
+            self.dlg.textEditSummary.append("Sorry, for defined parameters no road is available.")
             self.dlg.textEditSummary.append("")
-
-            ## create an empty memory layer
-            vl = QgsVectorLayer("LineString", "Route" + str(j + 1), "memory")
-            ## define and add a field ID to memory layer "Route"
-            provider = vl.dataProvider()
-            provider.addAttributes([QgsField("ID", QVariant.Int)])
-            ## create a new feature for the layer "Route"
-            ft = QgsFeature()
-            ## set the value 1 to the new field "ID"
-            ft.setAttributes([1])
-            line_points = []
-            for i in range(len(paths[j])):
-                # if j == 0:
-                if (i + 1) < len(paths[j]):
-                    line_points.append(QgsPoint(paths[j][i][0], paths[j][i][1]))
-            ## set the geometry defined from the point X: 50, Y: 100
-            ft.setGeometry(QgsGeometry.fromPolyline(line_points))
-            ## finally insert the feature
-            provider.addFeatures([ft])
-
-            ## set color
-            symbols = vl.rendererV2().symbols()
-            sym = symbols[0]
-            # sym.setColor(QColor.fromRgb(255, 0, 0))
-            sym.setWidth(2)
-
-            ## add layer to the registry and over the map canvas
-            QgsMapLayerRegistry.instance().addMapLayer(vl)
-
-        self.activate_group_box_calculator(True)
+            self.activate_group_box_calculator(False)
 
     def get_emissions(self):
 
@@ -404,13 +414,20 @@ class RoadEmissionCalculator:
                 self.dlg.textEditSummary.append("FC: " + str(statistics[i]['FC']))
             self.dlg.textEditSummary.append("")
 
-
-
     def run(self):
         """Run method that performs all the real work"""
-
+        # set input parameters to default when the dialog has been closed and open again
+        self.dlg.cmbBoxType.clear()
         self.dlg.cmbBoxType.addItems(self.emission_calculator.emissionJson.get_types())
+        self.dlg.cmbBoxLoad.clear()
         self.dlg.cmbBoxLoad.addItems(["0", "50", "100"])
+        self.dlg.lineEditStartX.setText("")
+        self.dlg.lineEditStartY.setText("")
+        self.dlg.lineEditEndX.setText("")
+        self.dlg.lineEditEndY.setText("")
+        self.dlg.lineEditHeight.setText(self.emission_calculator.height)
+        self.dlg.lineEditLength.setText(self.emission_calculator.length)
+        self.dlg.textEditSummary.clear()
         # show the dialog
         self.dlg.show()
         # Run the dialog event loop
