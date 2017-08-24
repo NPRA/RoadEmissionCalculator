@@ -87,6 +87,11 @@ class RoadEmissionCalculator:
         self.toolbar = self.iface.addToolBar(u'RoadEmissionCalculator')
         self.toolbar.setObjectName(u'RoadEmissionCalculator')
 
+        # matplolib generate lines in color sequence: blue, green, red, cyan, magenta, yellow, black, white
+        # same color schema will be use for proposal roads
+
+        self.color_list = [(0,0,255), (0,255,0), (255, 0, 0), (0,255,255), (255, 0, 255), (255, 255, 0), (0, 0, 0), (255, 255, 255)]
+
         self.dlg.checkBoxNox.setChecked(True)
         self.dlg.checkBoxCo.setChecked(True)
         self.dlg.checkBoxHc.setChecked(True)
@@ -367,7 +372,9 @@ class RoadEmissionCalculator:
                 ## set color
                 symbols = vl.rendererV2().symbols()
                 sym = symbols[0]
-                # sym.setColor(QColor.fromRgb(255, 0, 0))
+                if j < (len(self.color_list) - 1):
+                    color = self.color_list[j]
+                    sym.setColor(QColor.fromRgb(color[0], color[1], color[2]))
                 sym.setWidth(2)
 
                 ## add layer to the registry and over the map canvas
@@ -397,7 +404,7 @@ class RoadEmissionCalculator:
         # update summary tab with data
 
         statistics = self.emission_calculator.statistics
-
+        self.dlg.textEditSummary.append("------------------------------------------")
         self.dlg.textEditSummary.append("Emission results:")
         self.dlg.textEditSummary.append("")
         for i in range(len(statistics)):
