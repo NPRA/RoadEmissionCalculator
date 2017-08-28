@@ -21,16 +21,20 @@
  ***************************************************************************/
 """
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt, QVariant, QObject
-from PyQt4.QtGui import QAction, QIcon, QColor
+from PyQt4.QtGui import QAction, QIcon, QColor, QWidget
 # from qgis.core import QgsVectorLayer, QgsField, QgsMapLayerRegistry, QgsFeature, QgsGeometry, QgsPoint
 from qgis.core import QGis, QgsCoordinateTransform, QgsRectangle, QgsPoint, QgsGeometry, QgsCoordinateReferenceSystem
 from qgis.gui import QgsRubberBand
-
+from Overlay import Overlay
+from RoadThread import RoadThread
+from EmissionsThread import EmissionsThread
 from qgis.core import QgsVectorLayer, QgsField, QgsMapLayerRegistry, QgsFeature, QgsGeometry
 
 from copyLatLonTool import CopyLatLonTool
 from settings import SettingsWidget
 from EmissionCalculatorLib import EmissionCalculatorLib
+
+import time
 
 # from PyQt4.QtCore import *
 # Initialize Qt resources from file resources.py
@@ -105,8 +109,21 @@ class RoadEmissionCalculator:
         self.dlg.btnRemoveStartPoint.clicked.connect(self.remove_start_point)
         self.dlg.btnRemoveEndPoint.clicked.connect(self.remove_end_point)
 
-        self.dlg.btnGetRoads.clicked.connect(self.get_roads)
-        self.dlg.btnGetEmissions.clicked.connect(self.get_emissions)
+        self.dlg.widgetLoading.setShown(False)
+        self.overlay = Overlay(self.dlg.widgetLoading)
+        self.overlay.resize(700,445)
+        self.overlay.hide()
+
+        # self.dlg.btnGetRoads.clicked.connect(self.get_roads)
+        self.dlg.btnGetRoads.clicked.connect(self.onRoadStart)
+        self.roadTask = RoadThread()
+        self.roadTask.urlFinished.connect(self.onRoadFinished)
+
+        self.emissionTask = EmissionsThread()
+        self.emissionTask.calculationFinished.connect(self.onEmissionFinished)
+
+        # self.dlg.btnGetEmissions.clicked.connect(self.get_emissions)
+        self.dlg.btnGetEmissions.clicked.connect(self.onEmissionStart)
         self.dlg.cmbBoxType.currentIndexChanged.connect(self.set_vehicle_type)
         self.dlg.cmbBoxSscName.currentIndexChanged.connect(self.set_vehicle_ssc)
         self.dlg.cmbBoxSubsegment.currentIndexChanged.connect(self.set_vehicle_subsegment)
@@ -325,6 +342,28 @@ class RoadEmissionCalculator:
     def disableUseOfGlobalCrs(self):
         self.s.setValue("/Projections/defaultBehaviour", self.oldValidation)
 
+    def onRoadStart(self):
+        self.dlg.widgetLoading.setShown(True)
+        self.emission_calculator.coordinates = self.dlg.lineEditStartX.text() + "," + self.dlg.lineEditStartY.text() + \
+                                               ";" + self.dlg.lineEditEndX.text() + "," + self.dlg.lineEditEndY.text()
+        self.emission_calculator.length = self.dlg.lineEditLength.text()
+        self.emission_calculator.height = self.dlg.lineEditHeight.text()
+
+        self.overlay.show()
+
+        # self.roadTask.coord = self.emission_calculator.coordinates
+        # self.roadTask.length = self.emission_calculator.length
+        # self.roadTask.height = self.emission_calculator.height
+        # self.roadTask.load = self.dlg.cmbBoxLoad.currentText()
+        self.roadTask.set_calculator_lib(self.emission_calculator)
+        self.roadTask.start()
+
+    def onRoadFinished(self):
+        self.overlay.hide()
+        # self.emission_calculator.set_data(data)
+        self.get_roads()
+        self.dlg.widgetLoading.setShown(False)
+
     def get_roads(self):
         # print self.dlg.lblStartPoint.text()+";"+self.dlg.lblEndPoint.text()
         self.remove_layer("Route")
@@ -332,11 +371,11 @@ class RoadEmissionCalculator:
         # self.dlg.textEditSummary.append("Test")
 
         # self.emission_calculator.coordinates = self.dlg.lblStartPoint.text() + ";" + self.dlg.lblEndPoint.text()
-        self.emission_calculator.coordinates = self.dlg.lineEditStartX.text() + "," + self.dlg.lineEditStartY.text() + \
-                                               ";" + self.dlg.lineEditEndX.text() + "," + self.dlg.lineEditEndY.text()
-        self.emission_calculator.length = self.dlg.lineEditLength.text()
-        self.emission_calculator.height = self.dlg.lineEditHeight.text()
-        self.emission_calculator.get_json_from_url()
+        # self.emission_calculator.coordinates = self.dlg.lineEditStartX.text() + "," + self.dlg.lineEditStartY.text() + \
+        #                                        ";" + self.dlg.lineEditEndX.text() + "," + self.dlg.lineEditEndY.text()
+        # self.emission_calculator.length = self.dlg.lineEditLength.text()
+        # self.emission_calculator.height = self.dlg.lineEditHeight.text()
+        # self.emission_calculator.get_json_from_url()
 
         paths = self.emission_calculator.paths
         if len(paths) > 0:
@@ -386,7 +425,9 @@ class RoadEmissionCalculator:
             self.dlg.textEditSummary.append("")
             self.activate_group_box_calculator(False)
 
-    def get_emissions(self):
+    def onEmissionStart(self):
+        self.dlg.widgetLoading.setShown(True)
+        self.overlay.show()
 
         self.emission_calculator.calculate_nox = self.dlg.checkBoxNox.isChecked()
         self.emission_calculator.calculate_co = self.dlg.checkBoxCo.isChecked()
@@ -397,10 +438,30 @@ class RoadEmissionCalculator:
         self.emission_calculator.show_in_graph = self.dlg.checkBoxShowInGraph.isChecked()
         self.emission_calculator.cumulative = self.dlg.checkBoxCumulative.isChecked()
 
+        self.emissionTask.set_calculator_lib(self.emission_calculator)
 
 
-        self.emission_calculator.calculate_emissions()
+        self.emissionTask.start()
 
+    def onEmissionFinished(self):
+        # self.emission_calculator.set_emissions_for_pollutant(data)
+        # print self.emission_calculator.get_emissions_for_pollutant()
+        self.overlay.hide()
+        self.dlg.widgetLoading.setShown(False)
+        self.get_emissions()
+
+    def get_emissions(self):
+
+        # self.emission_calculator.calculate_nox = self.dlg.checkBoxNox.isChecked()
+        # self.emission_calculator.calculate_co = self.dlg.checkBoxCo.isChecked()
+        # self.emission_calculator.calculate_hc = self.dlg.checkBoxHc.isChecked()
+        # self.emission_calculator.calculate_pm = self.dlg.checkBoxPm.isChecked()
+        # self.emission_calculator.calculate_fc = self.dlg.checkBoxFc.isChecked()
+        #
+        # self.emission_calculator.show_in_graph = self.dlg.checkBoxShowInGraph.isChecked()
+        # self.emission_calculator.cumulative = self.dlg.checkBoxCumulative.isChecked()
+        # self.emission_calculator.calculate_emissions()
+        self.emission_calculator.show_emissions()
         # update summary tab with data
 
         statistics = self.emission_calculator.statistics
