@@ -1,8 +1,9 @@
 from PyQt4.QtCore import Qt, pyqtSignal, QVariant
-from PyQt4.QtGui import QApplication
+from PyQt4.QtGui import QApplication, QAction
 from qgis.core import QgsCoordinateTransform, QgsPoint
 from qgis.gui import QgsMapTool, QgsMessageBar
 from qgis.core import QgsVectorLayer, QgsField, QgsMapLayerRegistry, QgsFeature, QgsGeometry
+from qgis.gui import QgsMapToolPan
 
 from LatLon import LatLon
 import mgrs
@@ -164,9 +165,7 @@ class CopyLatLonTool(QgsMapTool):
             vl = QgsVectorLayer("Point", self.point_name, "memory")
             ## define and add a field ID to memory layer "myLayer"
             provider = vl.dataProvider()
-            idLayer = QVariant.Int
-            print idLayer
-            provider.addAttributes([QgsField("ID", idLayer)])
+            provider.addAttributes([QgsField("ID", QVariant.Int)])
             ## create a new feature for the layer "myLayer"
             ft = QgsFeature()
             ## set the value 1 to the new field "ID"
@@ -179,8 +178,8 @@ class CopyLatLonTool(QgsMapTool):
             QgsMapLayerRegistry.instance().addMapLayer(vl)
 
             self.canvas.unsetMapTool(self)
-            self.canvas.setCursor(Qt.ArrowCursor)
-
+            # self.canvas.setCursor(Qt.ArrowCursor)
+            self.iface.actionPan().trigger()
             # if self.capture4326:
             #     canvasCRS = self.canvas.mapSettings().destinationCrs()
             #     transform = QgsCoordinateTransform(canvasCRS, self.settings.epsg4326)

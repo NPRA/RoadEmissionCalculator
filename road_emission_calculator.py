@@ -343,20 +343,24 @@ class RoadEmissionCalculator:
         self.s.setValue("/Projections/defaultBehaviour", self.oldValidation)
 
     def onRoadStart(self):
-        self.dlg.widgetLoading.setShown(True)
-        self.emission_calculator.coordinates = self.dlg.lineEditStartX.text() + "," + self.dlg.lineEditStartY.text() + \
-                                               ";" + self.dlg.lineEditEndX.text() + "," + self.dlg.lineEditEndY.text()
-        self.emission_calculator.length = self.dlg.lineEditLength.text()
-        self.emission_calculator.height = self.dlg.lineEditHeight.text()
+        if self.dlg.lineEditStartX.text() == "" or self.dlg.lineEditStartY.text() == "" \
+                or self.dlg.lineEditEndX.text() == "" or self.dlg.lineEditEndY.text() == "":
+            return
+        else:
+            self.dlg.widgetLoading.setShown(True)
+            self.emission_calculator.coordinates = self.dlg.lineEditStartX.text() + "," + self.dlg.lineEditStartY.text() + \
+                                                   ";" + self.dlg.lineEditEndX.text() + "," + self.dlg.lineEditEndY.text()
+            self.emission_calculator.length = self.dlg.lineEditLength.text()
+            self.emission_calculator.height = self.dlg.lineEditHeight.text()
 
-        self.overlay.show()
+            self.overlay.show()
 
-        # self.roadTask.coord = self.emission_calculator.coordinates
-        # self.roadTask.length = self.emission_calculator.length
-        # self.roadTask.height = self.emission_calculator.height
-        # self.roadTask.load = self.dlg.cmbBoxLoad.currentText()
-        self.roadTask.set_calculator_lib(self.emission_calculator)
-        self.roadTask.start()
+            # self.roadTask.coord = self.emission_calculator.coordinates
+            # self.roadTask.length = self.emission_calculator.length
+            # self.roadTask.height = self.emission_calculator.height
+            # self.roadTask.load = self.dlg.cmbBoxLoad.currentText()
+            self.roadTask.set_calculator_lib(self.emission_calculator)
+            self.roadTask.start()
 
     def onRoadFinished(self):
         self.overlay.hide()
