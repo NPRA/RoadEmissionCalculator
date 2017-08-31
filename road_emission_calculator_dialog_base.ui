@@ -129,16 +129,16 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QCheckBox" name="checkBoxNox">
+       <widget class="QCheckBox" name="checkBoxCo">
         <property name="text">
-         <string>NOx</string>
+         <string>CO</string>
         </property>
        </widget>
       </item>
       <item row="0" column="2">
-       <widget class="QCheckBox" name="checkBoxCo">
+       <widget class="QCheckBox" name="checkBoxFc">
         <property name="text">
-         <string>CO</string>
+         <string>FC</string>
         </property>
        </widget>
       </item>
@@ -150,16 +150,16 @@
        </widget>
       </item>
       <item row="0" column="4">
-       <widget class="QCheckBox" name="checkBoxPm">
+       <widget class="QCheckBox" name="checkBoxNox">
         <property name="text">
-         <string>PM</string>
+         <string>NOx</string>
         </property>
        </widget>
       </item>
       <item row="0" column="5">
-       <widget class="QCheckBox" name="checkBoxFc">
+       <widget class="QCheckBox" name="checkBoxPm">
         <property name="text">
-         <string>FC</string>
+         <string>PM</string>
         </property>
        </widget>
       </item>
