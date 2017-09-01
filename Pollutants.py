@@ -1,4 +1,3 @@
-
 class Pollutants:
     def __init__(self, paths):
         self._pollutants = {}

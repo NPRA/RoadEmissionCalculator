@@ -435,22 +435,22 @@ class RoadEmissionCalculator:
         self.emission_calculator.show_emissions()
         # update summary tab with data
 
-        statistics = self.emission_calculator.statistics
+        summary = self.emission_calculator.get_summary()
         self.dlg.textEditSummary.append("------------------------------------------")
         self.dlg.textEditSummary.append("Emission results:")
         self.dlg.textEditSummary.append("")
-        for i in range(len(statistics)):
+        for i in range(len(summary)):
             self.dlg.textEditSummary.append("Route" + str(i + 1) + ":")
-            if "NOx" in statistics[i+1]:
-                self.dlg.textEditSummary.append("NOx: " + str(statistics[i+1]['NOx']))
-            if "CO" in statistics[i+1]:
-                self.dlg.textEditSummary.append("CO: " + str(statistics[i+1]['CO']))
-            if "HC" in statistics[i+1]:
-                self.dlg.textEditSummary.append("HC: " + str(statistics[i+1]['HC']))
-            if "PM" in statistics[i+1]:
-                self.dlg.textEditSummary.append("PM: " + str(statistics[i+1]['PM']))
-            if "FC" in statistics[i+1]:
-                self.dlg.textEditSummary.append("FC: " + str(statistics[i+1]['FC']))
+            if "NOx" in summary[i+1]:
+                self.dlg.textEditSummary.append("NOx: " + str(summary[i+1]['NOx']))
+            if "CO" in summary[i+1]:
+                self.dlg.textEditSummary.append("CO: " + str(summary[i+1]['CO']))
+            if "HC" in summary[i+1]:
+                self.dlg.textEditSummary.append("HC: " + str(summary[i+1]['HC']))
+            if "PM" in summary[i+1]:
+                self.dlg.textEditSummary.append("PM: " + str(summary[i+1]['PM']))
+            if "FC" in summary[i+1]:
+                self.dlg.textEditSummary.append("FC: " + str(summary[i+1]['FC']))
             self.dlg.textEditSummary.append("")
 
     def run(self):
