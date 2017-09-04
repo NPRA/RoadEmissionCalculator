@@ -94,7 +94,8 @@ class RoadEmissionCalculator:
         # matplolib generate lines in color sequence: blue, green, red, cyan, magenta, yellow, black, white
         # same color schema will be use for proposal roads
 
-        self.color_list = [(0,0,255), (0,255,0), (255, 0, 0), (0,255,255), (255, 0, 255), (255, 255, 0), (0, 0, 0), (255, 255, 255)]
+        self.color_list = [(0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 255, 255),
+                           (255, 0, 255), (255, 255, 0), (0, 0, 0), (255, 255, 255)]
 
         self.dlg.checkBoxNox.setChecked(True)
         self.dlg.checkBoxCo.setChecked(True)
