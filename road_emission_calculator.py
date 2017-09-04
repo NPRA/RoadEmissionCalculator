@@ -33,6 +33,7 @@ from qgis.core import QgsVectorLayer, QgsField, QgsMapLayerRegistry, QgsFeature,
 from copyLatLonTool import CopyLatLonTool
 from settings import SettingsWidget
 from EmissionCalculatorLib import EmissionCalculatorLib
+import sys
 
 import time
 
@@ -407,8 +408,11 @@ class RoadEmissionCalculator:
 
             self.activate_group_box_calculator(True)
         else:
-            self.dlg.textEditSummary.append("Sorry, for defined parameters no road is available.")
-            self.dlg.textEditSummary.append("")
+            if "Fail" in self.emission_calculator.emission_summary:
+                self.dlg.textEditSummary.append(self.emission_calculator.emission_summary["Fail"])
+                self.dlg.textEditSummary.append("")
+            # self.dlg.textEditSummary.append("Sorry, for defined parameters no road is available.")
+            # self.dlg.textEditSummary.append("")
             self.activate_group_box_calculator(False)
 
     def onEmissionStart(self):
@@ -442,16 +446,17 @@ class RoadEmissionCalculator:
         self.dlg.textEditSummary.append("")
         for i in range(len(summary)):
             self.dlg.textEditSummary.append("Route" + str(i + 1) + ":")
-            if "NOx" in summary[i+1]:
-                self.dlg.textEditSummary.append("NOx: " + str(summary[i+1]['NOx']))
             if "CO" in summary[i+1]:
                 self.dlg.textEditSummary.append("CO: " + str(summary[i+1]['CO']))
-            if "HC" in summary[i+1]:
-                self.dlg.textEditSummary.append("HC: " + str(summary[i+1]['HC']))
-            if "PM" in summary[i+1]:
-                self.dlg.textEditSummary.append("PM: " + str(summary[i+1]['PM']))
             if "FC" in summary[i+1]:
                 self.dlg.textEditSummary.append("FC: " + str(summary[i+1]['FC']))
+            if "HC" in summary[i+1]:
+                self.dlg.textEditSummary.append("HC: " + str(summary[i+1]['HC']))
+            if "NOx" in summary[i+1]:
+                self.dlg.textEditSummary.append("NOx: " + str(summary[i+1]['NOx']))
+            if "PM" in summary[i+1]:
+                self.dlg.textEditSummary.append("PM: " + str(summary[i+1]['PM']))
+
             self.dlg.textEditSummary.append("")
 
     def run(self):
@@ -478,4 +483,6 @@ class RoadEmissionCalculator:
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             self.canvas.unsetMapTool(self.mapTool)
-            pass
+        else:
+            self.dlg.widgetLoading.setShown(False)
+            # pass
