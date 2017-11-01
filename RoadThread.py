@@ -1,13 +1,13 @@
 from PyQt4.QtCore import *
 import time
-from EmissionCalculatorLib import EmissionCalculatorLib
+# from EmissionCalculatorLib import EmissionCalculatorLib
 
 class RoadThread(QThread):
     urlFinished = pyqtSignal()
 
     def __init__(self):
         QThread.__init__(self)
-        self.emission_calculator = EmissionCalculatorLib()
+        # self.emission_calculator = EmissionCalculatorLib()
 
     def set_calculator_lib(self, calculatorLib):
         self.emission_calculator = calculatorLib

@@ -32,8 +32,9 @@ from qgis.core import QgsVectorLayer, QgsField, QgsMapLayerRegistry, QgsFeature,
 
 from copyLatLonTool import CopyLatLonTool
 from settings import SettingsWidget
-from EmissionCalculatorLib import EmissionCalculatorLib
+# from EmissionCalculatorLib import EmissionCalculatorLib
 import sys
+import pip
 
 import time
 
@@ -49,6 +50,17 @@ class RoadEmissionCalculator:
     """QGIS Plugin Implementation."""
 
     def __init__(self, iface):
+
+        self.plugin_dir = os.path.dirname(__file__)
+        self.emissionCalculator_dir = os.path.join(self.plugin_dir, 'emission')
+
+        try:
+            import emission
+        except:
+            pip.main(['install', '--target=%s' % self.emissionCalculator_dir, 'emission'])
+            if self.emissionCalculator_dir not in sys.path:
+                sys.path.append(self.emissionCalculator_dir)
+
         """Constructor.
 
         :param iface: An interface instance that will be passed to this class
@@ -61,7 +73,7 @@ class RoadEmissionCalculator:
         self.canvas = iface.mapCanvas()
         self.crossRb = QgsRubberBand(self.canvas, QGis.Line)
         self.crossRb.setColor(Qt.red)
-        self.emission_calculator = EmissionCalculatorLib()
+        # self.emission_calculator = EmissionCalculatorLib()
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
@@ -130,8 +142,8 @@ class RoadEmissionCalculator:
         self.dlg.checkBoxShowInGraph.clicked.connect(self.activate_cumulative)
 
         # init with default values
-        self.dlg.lineEditLength.setText(self.emission_calculator.length)
-        self.dlg.lineEditHeight.setText(self.emission_calculator.height)
+        # self.dlg.lineEditLength.setText(self.emission_calculator.length)
+        # self.dlg.lineEditHeight.setText(self.emission_calculator.height)
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -261,29 +273,31 @@ class RoadEmissionCalculator:
         self.canvas.unsetMapTool(self.mapTool)
 
     def set_vehicle_type(self):
-        self.emission_calculator.emissionJson.set_type(self.dlg.cmbBoxType.currentText())
+        # self.emission_calculator.emissionJson.set_type(self.dlg.cmbBoxType.currentText())
         self.dlg.cmbBoxSscName.clear()
-        self.dlg.cmbBoxSscName.addItems(self.emission_calculator.emissionJson.get_ssc_names())
+        # self.dlg.cmbBoxSscName.addItems(self.emission_calculator.emissionJson.get_ssc_names())
 
     def set_vehicle_ssc(self):
-        self.emission_calculator.emissionJson.set_ssc_name(self.dlg.cmbBoxSscName.currentText())
+        # self.emission_calculator.emissionJson.set_ssc_name(self.dlg.cmbBoxSscName.currentText())
         self.dlg.cmbBoxSubsegment.clear()
-        self.dlg.cmbBoxSubsegment.addItems(self.emission_calculator.emissionJson.get_subsegment())
+        # self.dlg.cmbBoxSubsegment.addItems(self.emission_calculator.emissionJson.get_subsegment())
 
     def set_vehicle_subsegment(self):
-        self.emission_calculator.emissionJson.set_subsegment(self.dlg.cmbBoxSubsegment.currentText())
+        # self.emission_calculator.emissionJson.set_subsegment(self.dlg.cmbBoxSubsegment.currentText())
         self.dlg.cmbBoxTecName.clear()
-        self.dlg.cmbBoxTecName.addItems(self.emission_calculator.emissionJson.get_tec_names())
+        # self.dlg.cmbBoxTecName.addItems(self.emission_calculator.emissionJson.get_tec_names())
         if self.dlg.cmbBoxTecName.count() == 0 or self.dlg.cmbBoxTecName.count() == 1:
             self.dlg.cmbBoxTecName.setEnabled(False)
         else:
             self.dlg.cmbBoxTecName.setEnabled(True)
 
     def set_vehicle_tec(self):
-        self.emission_calculator.emissionJson.set_tec_name(self.dlg.cmbBoxTecName.currentText())
+        # self.emission_calculator.emissionJson.set_tec_name(self.dlg.cmbBoxTecName.currentText())
+        pass
 
     def set_vehicle_load(self):
-        self.emission_calculator.emissionJson.set_load(self.dlg.cmbBoxLoad.currentText())
+        # self.emission_calculator.emissionJson.set_load(self.dlg.cmbBoxLoad.currentText())
+        pass
 
     def activate_cumulative(self):
         self.dlg.checkBoxCumulative.setEnabled(self.dlg.checkBoxShowInGraph.isChecked())
@@ -345,13 +359,13 @@ class RoadEmissionCalculator:
             return
         else:
             self.dlg.widgetLoading.setShown(True)
-            self.emission_calculator.coordinates = self.dlg.lineEditStartX.text() + "," + self.dlg.lineEditStartY.text() + \
-                                                   ";" + self.dlg.lineEditEndX.text() + "," + self.dlg.lineEditEndY.text()
-            self.emission_calculator.length = self.dlg.lineEditLength.text()
-            self.emission_calculator.height = self.dlg.lineEditHeight.text()
+            # self.emission_calculator.coordinates = self.dlg.lineEditStartX.text() + "," + self.dlg.lineEditStartY.text() + \
+            #                                        ";" + self.dlg.lineEditEndX.text() + "," + self.dlg.lineEditEndY.text()
+            # self.emission_calculator.length = self.dlg.lineEditLength.text()
+            # self.emission_calculator.height = self.dlg.lineEditHeight.text()
 
             self.overlay.show()
-            self.roadTask.set_calculator_lib(self.emission_calculator)
+            # self.roadTask.set_calculator_lib(self.emission_calculator)
             self.roadTask.start()
 
     def onRoadFinished(self):
@@ -364,69 +378,70 @@ class RoadEmissionCalculator:
         # print self.dlg.lblStartPoint.text()+";"+self.dlg.lblEndPoint.text()
         self.remove_layer("Route")
         self.dlg.textEditSummary.clear()
-        paths = self.emission_calculator.paths
-        if len(paths) > 0:
-            for j in range(len(paths)):
+        # paths = self.emission_calculator.paths
+        # if len(paths) > 0:
+        #     for j in range(len(paths)):
+        #
+        #         self.dlg.textEditSummary.append("Route" + str(j + 1) + ":")
+        #         distance = self.emission_calculator.atr_distances[j]/1000
+        #         hours, minutes = divmod(self.emission_calculator.atr_times[j], 60)
+        #         hours = int(hours)
+        #         minutes = int(minutes)
+        #         self.dlg.textEditSummary.append("Length: " + str(distance) + " km, driving time: " + str(hours) + " hours and " + str(minutes) + " minutes." )
+        #         self.dlg.textEditSummary.append("")
+        #
+        #         ## create an empty memory layer
+        #         vl = QgsVectorLayer("LineString", "Route" + str(j + 1), "memory")
+        #         ## define and add a field ID to memory layer "Route"
+        #         provider = vl.dataProvider()
+        #         provider.addAttributes([QgsField("ID", QVariant.Int)])
+        #         ## create a new feature for the layer "Route"
+        #         ft = QgsFeature()
+        #         ## set the value 1 to the new field "ID"
+        #         ft.setAttributes([1])
+        #         line_points = []
+        #         for i in range(len(paths[j])):
+        #             # if j == 0:
+        #             if (i + 1) < len(paths[j]):
+        #                 line_points.append(QgsPoint(paths[j][i][0], paths[j][i][1]))
+        #         ## set the geometry defined from the point X: 50, Y: 100
+        #         ft.setGeometry(QgsGeometry.fromPolyline(line_points))
+        #         ## finally insert the feature
+        #         provider.addFeatures([ft])
+        #
+        #         ## set color
+        #         symbols = vl.rendererV2().symbols()
+        #         sym = symbols[0]
+        #         if j < (len(self.color_list) - 1):
+        #             color = self.color_list[j]
+        #             sym.setColor(QColor.fromRgb(color[0], color[1], color[2]))
+        #         sym.setWidth(2)
+        #
+        #         ## add layer to the registry and over the map canvas
+        #         QgsMapLayerRegistry.instance().addMapLayer(vl)
+        #
+        #     self.activate_group_box_calculator(True)
+        # else:
+        #     if "Fail" in self.emission_calculator.emission_summary:
+        #         self.dlg.textEditSummary.append(self.emission_calculator.emission_summary["Fail"])
+        #         self.dlg.textEditSummary.append("")
+        #     # self.dlg.textEditSummary.append("Sorry, for defined parameters no road is available.")
+        #     # self.dlg.textEditSummary.append("")
+        #     self.activate_group_box_calculator(False)
 
-                self.dlg.textEditSummary.append("Route" + str(j + 1) + ":")
-                distance = self.emission_calculator.atr_distances[j]/1000
-                hours, minutes = divmod(self.emission_calculator.atr_times[j], 60)
-                hours = int(hours)
-                minutes = int(minutes)
-                self.dlg.textEditSummary.append("Length: " + str(distance) + " km, driving time: " + str(hours) + " hours and " + str(minutes) + " minutes." )
-                self.dlg.textEditSummary.append("")
-
-                ## create an empty memory layer
-                vl = QgsVectorLayer("LineString", "Route" + str(j + 1), "memory")
-                ## define and add a field ID to memory layer "Route"
-                provider = vl.dataProvider()
-                provider.addAttributes([QgsField("ID", QVariant.Int)])
-                ## create a new feature for the layer "Route"
-                ft = QgsFeature()
-                ## set the value 1 to the new field "ID"
-                ft.setAttributes([1])
-                line_points = []
-                for i in range(len(paths[j])):
-                    # if j == 0:
-                    if (i + 1) < len(paths[j]):
-                        line_points.append(QgsPoint(paths[j][i][0], paths[j][i][1]))
-                ## set the geometry defined from the point X: 50, Y: 100
-                ft.setGeometry(QgsGeometry.fromPolyline(line_points))
-                ## finally insert the feature
-                provider.addFeatures([ft])
-
-                ## set color
-                symbols = vl.rendererV2().symbols()
-                sym = symbols[0]
-                if j < (len(self.color_list) - 1):
-                    color = self.color_list[j]
-                    sym.setColor(QColor.fromRgb(color[0], color[1], color[2]))
-                sym.setWidth(2)
-
-                ## add layer to the registry and over the map canvas
-                QgsMapLayerRegistry.instance().addMapLayer(vl)
-
-            self.activate_group_box_calculator(True)
-        else:
-            if "Fail" in self.emission_calculator.emission_summary:
-                self.dlg.textEditSummary.append(self.emission_calculator.emission_summary["Fail"])
-                self.dlg.textEditSummary.append("")
-            # self.dlg.textEditSummary.append("Sorry, for defined parameters no road is available.")
-            # self.dlg.textEditSummary.append("")
-            self.activate_group_box_calculator(False)
 
     def onEmissionStart(self):
         self.dlg.widgetLoading.setShown(True)
         self.overlay.show()
 
-        self.emission_calculator.calculate_nox = self.dlg.checkBoxNox.isChecked()
-        self.emission_calculator.calculate_co = self.dlg.checkBoxCo.isChecked()
-        self.emission_calculator.calculate_hc = self.dlg.checkBoxHc.isChecked()
-        self.emission_calculator.calculate_pm = self.dlg.checkBoxPm.isChecked()
-        self.emission_calculator.calculate_fc = self.dlg.checkBoxFc.isChecked()
-        self.emission_calculator.show_in_graph = self.dlg.checkBoxShowInGraph.isChecked()
-        self.emission_calculator.cumulative = self.dlg.checkBoxCumulative.isChecked()
-        self.emissionTask.set_calculator_lib(self.emission_calculator)
+        # self.emission_calculator.calculate_nox = self.dlg.checkBoxNox.isChecked()
+        # self.emission_calculator.calculate_co = self.dlg.checkBoxCo.isChecked()
+        # self.emission_calculator.calculate_hc = self.dlg.checkBoxHc.isChecked()
+        # self.emission_calculator.calculate_pm = self.dlg.checkBoxPm.isChecked()
+        # self.emission_calculator.calculate_fc = self.dlg.checkBoxFc.isChecked()
+        # self.emission_calculator.show_in_graph = self.dlg.checkBoxShowInGraph.isChecked()
+        # self.emission_calculator.cumulative = self.dlg.checkBoxCumulative.isChecked()
+        # self.emissionTask.set_calculator_lib(self.emission_calculator)
 
         self.emissionTask.start()
 
@@ -437,41 +452,42 @@ class RoadEmissionCalculator:
 
     def get_emissions(self):
 
-        self.emission_calculator.show_emissions()
-        # update summary tab with data
-
-        summary = self.emission_calculator.get_summary()
-        self.dlg.textEditSummary.append("------------------------------------------")
-        self.dlg.textEditSummary.append("Emission results:")
-        self.dlg.textEditSummary.append("")
-        for i in range(len(summary)):
-            self.dlg.textEditSummary.append("Route" + str(i + 1) + ":")
-            if "CO" in summary[i+1]:
-                self.dlg.textEditSummary.append("CO: " + str(summary[i+1]['CO']))
-            if "FC" in summary[i+1]:
-                self.dlg.textEditSummary.append("FC: " + str(summary[i+1]['FC']))
-            if "HC" in summary[i+1]:
-                self.dlg.textEditSummary.append("HC: " + str(summary[i+1]['HC']))
-            if "NOx" in summary[i+1]:
-                self.dlg.textEditSummary.append("NOx: " + str(summary[i+1]['NOx']))
-            if "PM" in summary[i+1]:
-                self.dlg.textEditSummary.append("PM: " + str(summary[i+1]['PM']))
-
-            self.dlg.textEditSummary.append("")
+        # self.emission_calculator.show_emissions()
+        # # update summary tab with data
+        #
+        # summary = self.emission_calculator.get_summary()
+        # self.dlg.textEditSummary.append("------------------------------------------")
+        # self.dlg.textEditSummary.append("Emission results:")
+        # self.dlg.textEditSummary.append("")
+        # for i in range(len(summary)):
+        #     self.dlg.textEditSummary.append("Route" + str(i + 1) + ":")
+        #     if "CO" in summary[i+1]:
+        #         self.dlg.textEditSummary.append("CO: " + str(summary[i+1]['CO']))
+        #     if "FC" in summary[i+1]:
+        #         self.dlg.textEditSummary.append("FC: " + str(summary[i+1]['FC']))
+        #     if "HC" in summary[i+1]:
+        #         self.dlg.textEditSummary.append("HC: " + str(summary[i+1]['HC']))
+        #     if "NOx" in summary[i+1]:
+        #         self.dlg.textEditSummary.append("NOx: " + str(summary[i+1]['NOx']))
+        #     if "PM" in summary[i+1]:
+        #         self.dlg.textEditSummary.append("PM: " + str(summary[i+1]['PM']))
+        #
+        #     self.dlg.textEditSummary.append("")
+        pass
 
     def run(self):
         """Run method that performs all the real work"""
         # set input parameters to default when the dialog has been closed and open again
         self.dlg.cmbBoxType.clear()
-        self.dlg.cmbBoxType.addItems(self.emission_calculator.emissionJson.get_types())
+        # self.dlg.cmbBoxType.addItems(self.emission_calculator.emissionJson.get_types())
         self.dlg.cmbBoxLoad.clear()
         self.dlg.cmbBoxLoad.addItems(["0", "50", "100"])
         self.dlg.lineEditStartX.setText("")
         self.dlg.lineEditStartY.setText("")
         self.dlg.lineEditEndX.setText("")
         self.dlg.lineEditEndY.setText("")
-        self.dlg.lineEditHeight.setText(self.emission_calculator.height)
-        self.dlg.lineEditLength.setText(self.emission_calculator.length)
+        # self.dlg.lineEditHeight.setText(self.emission_calculator.height)
+        # self.dlg.lineEditLength.setText(self.emission_calculator.length)
         self.dlg.textEditSummary.clear()
         self.activate_group_box_calculator(False)
         # show the dialog
