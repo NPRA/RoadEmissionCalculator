@@ -32,18 +32,26 @@ from qgis.core import QgsVectorLayer, QgsField, QgsMapLayerRegistry, QgsFeature,
 
 from copyLatLonTool import CopyLatLonTool
 from settings import SettingsWidget
-# from EmissionCalculatorLib import EmissionCalculatorLib
 import sys
 import pip
+import os.path
 
-import time
+plugin_dir = os.path.dirname(__file__)
+emissionCalculator_dir = os.path.join(plugin_dir, 'emission')
+try:
+    import emission
+except:
+    pip.main(['install', '--target=%s' % emissionCalculator_dir, 'emission'])
+    if emissionCalculator_dir not in sys.path:
+        sys.path.append(emissionCalculator_dir)
+    import emission
 
 # from PyQt4.QtCore import *
 # Initialize Qt resources from file resources.py
 import resources
 # Import the code for the dialog
 from road_emission_calculator_dialog import RoadEmissionCalculatorDialog
-import os.path
+
 
 
 class RoadEmissionCalculator:
@@ -51,15 +59,16 @@ class RoadEmissionCalculator:
 
     def __init__(self, iface):
 
-        self.plugin_dir = os.path.dirname(__file__)
-        self.emissionCalculator_dir = os.path.join(self.plugin_dir, 'emission')
+        # self.plugin_dir = os.path.dirname(__file__)
+        # self.emissionCalculator_dir = os.path.join(self.plugin_dir, 'emission')
 
-        try:
-            import emission
-        except:
-            pip.main(['install', '--target=%s' % self.emissionCalculator_dir, 'emission'])
-            if self.emissionCalculator_dir not in sys.path:
-                sys.path.append(self.emissionCalculator_dir)
+        # try:
+        #     import emission
+        # except:
+        #     pip.main(['install', '--target=%s' % self.emissionCalculator_dir, 'emission'])
+        #     if self.emissionCalculator_dir not in sys.path:
+        #         sys.path.append(self.emissionCalculator_dir)
+
 
         """Constructor.
 
@@ -134,16 +143,14 @@ class RoadEmissionCalculator:
         self.emissionTask.calculationFinished.connect(self.onEmissionFinished)
 
         self.dlg.btnGetEmissions.clicked.connect(self.onEmissionStart)
-        self.dlg.cmbBoxType.currentIndexChanged.connect(self.set_vehicle_type)
-        self.dlg.cmbBoxSscName.currentIndexChanged.connect(self.set_vehicle_ssc)
-        self.dlg.cmbBoxSubsegment.currentIndexChanged.connect(self.set_vehicle_subsegment)
-        self.dlg.cmbBoxTecName.currentIndexChanged.connect(self.set_vehicle_tec)
-        self.dlg.cmbBoxLoad.currentIndexChanged.connect(self.set_vehicle_load)
+        self.dlg.cmbBoxVehicleType.currentIndexChanged.connect(self.set_vehicle_subsegment)
+        self.dlg.cmbBoxSubsegment.currentIndexChanged.connect(self.set_vehicle_euro_std)
+
         self.dlg.checkBoxShowInGraph.clicked.connect(self.activate_cumulative)
 
         # init with default values
-        # self.dlg.lineEditLength.setText(self.emission_calculator.length)
-        # self.dlg.lineEditHeight.setText(self.emission_calculator.height)
+        self.dlg.lineEditLength.setText('12')
+        self.dlg.lineEditHeight.setText('4.4')
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -259,7 +266,7 @@ class RoadEmissionCalculator:
         self.dlg.lineEditEndX.setReadOnly(True)
         self.dlg.lineEditEndY.setReadOnly(True)
         self.activate_cumulative()
-        self.activate_group_box_calculator(False)
+        # self.activate_group_box_calculator(False)
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -272,38 +279,24 @@ class RoadEmissionCalculator:
         del self.toolbar
         self.canvas.unsetMapTool(self.mapTool)
 
-    def set_vehicle_type(self):
-        # self.emission_calculator.emissionJson.set_type(self.dlg.cmbBoxType.currentText())
-        self.dlg.cmbBoxSscName.clear()
-        # self.dlg.cmbBoxSscName.addItems(self.emission_calculator.emissionJson.get_ssc_names())
-
-    def set_vehicle_ssc(self):
-        # self.emission_calculator.emissionJson.set_ssc_name(self.dlg.cmbBoxSscName.currentText())
-        self.dlg.cmbBoxSubsegment.clear()
-        # self.dlg.cmbBoxSubsegment.addItems(self.emission_calculator.emissionJson.get_subsegment())
-
     def set_vehicle_subsegment(self):
-        # self.emission_calculator.emissionJson.set_subsegment(self.dlg.cmbBoxSubsegment.currentText())
-        self.dlg.cmbBoxTecName.clear()
-        # self.dlg.cmbBoxTecName.addItems(self.emission_calculator.emissionJson.get_tec_names())
-        if self.dlg.cmbBoxTecName.count() == 0 or self.dlg.cmbBoxTecName.count() == 1:
-            self.dlg.cmbBoxTecName.setEnabled(False)
-        else:
-            self.dlg.cmbBoxTecName.setEnabled(True)
+        self.dlg.cmbBoxSubsegment.clear()
+        if self.dlg.cmbBoxVehicleType.currentText() == 'CAR':
+            segments = emission.vehicles.Car.type
+            self.dlg.cmbBoxSubsegment.addItems([list(d)[0] for d in segments])
 
-    def set_vehicle_tec(self):
-        # self.emission_calculator.emissionJson.set_tec_name(self.dlg.cmbBoxTecName.currentText())
-        pass
+    def set_vehicle_euro_std(self):
 
-    def set_vehicle_load(self):
-        # self.emission_calculator.emissionJson.set_load(self.dlg.cmbBoxLoad.currentText())
-        pass
+        self.dlg.cmbBoxEuroStd.clear()
+        if self.dlg.cmbBoxVehicleType.currentText() == 'CAR':
+            segments = emission.vehicles.Car.type
+            self.dlg.cmbBoxEuroStd.addItems(list(filter(lambda y: y != None, [x.get(self.dlg.cmbBoxSubsegment.currentText()) for x in segments]))[0])
 
     def activate_cumulative(self):
         self.dlg.checkBoxCumulative.setEnabled(self.dlg.checkBoxShowInGraph.isChecked())
 
-    def activate_group_box_calculator(self, value):
-        self.dlg.groupBoxCalculator.setEnabled(value)
+    # def activate_group_box_calculator(self, value):
+    #     self.dlg.groupBoxCalculator.setEnabled(value)
 
     def set_new_point(self, point_name):
         self.mapTool.point_name = point_name
@@ -332,14 +325,14 @@ class RoadEmissionCalculator:
         self.dlg.lineEditStartX.setText("")
         self.dlg.lineEditStartY.setText("")
         self.remove_layer("Start_point")
-        self.activate_group_box_calculator(False)
+        # self.activate_group_box_calculator(False)
 
     def remove_end_point(self):
         # self.dlg.lblEndPoint.setText("0,0")
         self.dlg.lineEditEndX.setText("")
         self.dlg.lineEditEndY.setText("")
         self.remove_layer("End_point")
-        self.activate_group_box_calculator(False)
+        # self.activate_group_box_calculator(False)
 
     'set new Layers to use the Project-CRS'
 
@@ -358,15 +351,19 @@ class RoadEmissionCalculator:
                 or self.dlg.lineEditEndX.text() == "" or self.dlg.lineEditEndY.text() == "":
             return
         else:
-            self.dlg.widgetLoading.setShown(True)
+
+            # self.dlg.widgetLoading.setShown(True)
             # self.emission_calculator.coordinates = self.dlg.lineEditStartX.text() + "," + self.dlg.lineEditStartY.text() + \
             #                                        ";" + self.dlg.lineEditEndX.text() + "," + self.dlg.lineEditEndY.text()
             # self.emission_calculator.length = self.dlg.lineEditLength.text()
             # self.emission_calculator.height = self.dlg.lineEditHeight.text()
+            startPoint = [float(self.dlg.lineEditStartX.text()), float(self.dlg.lineEditStartY.text())]
+            endPoint = [float(self.dlg.lineEditEndX.text()), float(self.dlg.lineEditEndY.text())]
 
-            self.overlay.show()
+
+            # self.overlay.show()
             # self.roadTask.set_calculator_lib(self.emission_calculator)
-            self.roadTask.start()
+            # self.roadTask.start()
 
     def onRoadFinished(self):
         self.overlay.hide()
@@ -478,8 +475,12 @@ class RoadEmissionCalculator:
     def run(self):
         """Run method that performs all the real work"""
         # set input parameters to default when the dialog has been closed and open again
-        self.dlg.cmbBoxType.clear()
+        self.dlg.cmbBoxVehicleType.clear()
+        self.dlg.cmbBoxFuelType.clear()
         # self.dlg.cmbBoxType.addItems(self.emission_calculator.emissionJson.get_types())
+        # print filter(lambda x: not x.startswith('_'), emission.vehicles.VehicleTypes.__dict__.keys())
+        self.dlg.cmbBoxVehicleType.addItems(filter(lambda x: not x.startswith('_'), emission.vehicles.VehicleTypes.__dict__.keys()))
+        self.dlg.cmbBoxFuelType.addItems(filter(lambda x: not x.startswith('_'), emission.vehicles.FuelTypes.__dict__.keys()))
         self.dlg.cmbBoxLoad.clear()
         self.dlg.cmbBoxLoad.addItems(["0", "50", "100"])
         self.dlg.lineEditStartX.setText("")
@@ -489,7 +490,7 @@ class RoadEmissionCalculator:
         # self.dlg.lineEditHeight.setText(self.emission_calculator.height)
         # self.dlg.lineEditLength.setText(self.emission_calculator.length)
         self.dlg.textEditSummary.clear()
-        self.activate_group_box_calculator(False)
+        # self.activate_group_box_calculator(False)
         # show the dialog
         self.dlg.show()
         # Run the dialog event loop
