@@ -121,9 +121,9 @@ class RoadEmissionCalculator:
 
         self.dlg.checkBoxNox.setChecked(True)
         self.dlg.checkBoxCo.setChecked(True)
-        self.dlg.checkBoxHc.setChecked(True)
-        self.dlg.checkBoxPm.setChecked(True)
-        self.dlg.checkBoxFc.setChecked(True)
+        # self.dlg.checkBoxHc.setChecked(True)
+        # self.dlg.checkBoxPm.setChecked(True)
+        # self.dlg.checkBoxFc.setChecked(True)
 
         self.dlg.btnAddStartPoint.clicked.connect(self.add_start_point)
         self.dlg.btnAddEndPoint.clicked.connect(self.add_end_point)
@@ -135,7 +135,7 @@ class RoadEmissionCalculator:
         self.overlay.resize(700,445)
         self.overlay.hide()
 
-        self.dlg.btnGetRoads.clicked.connect(self.onRoadStart)
+        # self.dlg.btnGetRoads.clicked.connect(self.onRoadStart)
         self.roadTask = RoadThread()
         self.roadTask.urlFinished.connect(self.onRoadFinished)
 
