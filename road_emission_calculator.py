@@ -40,11 +40,13 @@ plugin_dir = os.path.dirname(__file__)
 emissionCalculator_dir = os.path.join(plugin_dir, 'emission')
 try:
     import emission
+    from RoadEmissionPlannerThread import RoadEmissionPlannerThread
 except:
     pip.main(['install', '--target=%s' % emissionCalculator_dir, 'emission'])
     if emissionCalculator_dir not in sys.path:
         sys.path.append(emissionCalculator_dir)
     import emission
+    from RoadEmissionPlannerThread import RoadEmissionPlannerThread
 
 # from PyQt4.QtCore import *
 # Initialize Qt resources from file resources.py
@@ -83,6 +85,7 @@ class RoadEmissionCalculator:
         self.crossRb = QgsRubberBand(self.canvas, QGis.Line)
         self.crossRb.setColor(Qt.red)
         # self.emission_calculator = EmissionCalculatorLib()
+        self.planner = emission
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
@@ -138,6 +141,9 @@ class RoadEmissionCalculator:
         # self.dlg.btnGetRoads.clicked.connect(self.onRoadStart)
         self.roadTask = RoadThread()
         self.roadTask.urlFinished.connect(self.onRoadFinished)
+
+        self.roadEmissionPlanner = RoadEmissionPlannerThread()
+        self.roadEmissionPlanner.plannerFinished.connect(self.onRoadEmissionPlannerFinished)
 
         self.emissionTask = EmissionsThread()
         self.emissionTask.calculationFinished.connect(self.onEmissionFinished)
@@ -365,6 +371,26 @@ class RoadEmissionCalculator:
             # self.roadTask.set_calculator_lib(self.emission_calculator)
             # self.roadTask.start()
 
+    def onRoadEmissionPlannerStart(self):
+        self.dlg.widgetLoading.setShown(True)
+        start = [float(self.dlg.lineEditStartX.text()), float(self.dlg.lineEditStartY.text())]
+        stop = [float(self.dlg.lineEditEndX.text()), float(self.dlg.lineEditEndY.text())]
+        fuel_diesel = emission.vehicles.FuelTypes.DIESEL
+        vehicle = emission.vehicles.Truck(fuel_diesel)
+
+        self.planner = emission.Planner(start, stop, vehicle)
+        self.planner.add_pollutant(emission.PollutantTypes.NOx)
+        self.planner.add_pollutant(emission.PollutantTypes.CO)
+
+        self.overlay.show()
+        self.roadEmissionPlanner.set_planner(self.planner)
+        self.roadEmissionPlanner.start()
+
+    def onRoadEmissionPlannerFinished(self):
+        self.overlay.hide()
+        self.roadEmissionPlannerFinished()
+        self.dlg.widgetLoading.setShown(False)
+
     def onRoadFinished(self):
         self.overlay.hide()
         # self.emission_calculator.set_data(data)
@@ -426,10 +452,83 @@ class RoadEmissionCalculator:
         #     # self.dlg.textEditSummary.append("")
         #     self.activate_group_box_calculator(False)
 
+    def roadEmissionPlannerStart(self):
+        pass
+
+    def roadEmissionPlannerFinished(self):
+        # start = [float(self.dlg.lineEditStartX.text()), float(self.dlg.lineEditStartY.text())]
+        # stop = [float(self.dlg.lineEditEndX.text()), float(self.dlg.lineEditEndY.text())]
+        # fuel_diesel = emission.vehicles.FuelTypes.DIESEL
+        # vehicle = emission.vehicles.Truck(fuel_diesel)
+        #
+        # planner = emission.Planner(start, stop, vehicle)
+        # planner.add_pollutant(emission.PollutantTypes.NOx)
+        # planner.add_pollutant(emission.PollutantTypes.CO)
+        # planner.run()
+        print("Thread finished")
+        print(self.planner.routes[0].path)
+        # paths = planner.routes
+        if len(self.planner.routes) > 0:
+            for j in range(len(self.planner.routes)):
+
+                self.dlg.textEditSummary.append("Route" + str(j + 1) + ":")
+                distance = self.planner.routes[j].distance / 1000
+                hours, minutes = divmod(self.planner.routes[j].minutes, 60)
+                hours = int(hours)
+                minutes = int(minutes)
+                self.dlg.textEditSummary.append(
+                    "Length: " + str(distance) + " km, driving time: " + str(hours) + " hours and " + str(
+                        minutes) + " minutes.")
+                self.dlg.textEditSummary.append("")
+
+                ## create an empty memory layer
+                vl = QgsVectorLayer("LineString", "Route" + str(j + 1), "memory")
+                ## define and add a field ID to memory layer "Route"
+                provider = vl.dataProvider()
+                provider.addAttributes([QgsField("ID", QVariant.Int)])
+                ## create a new feature for the layer "Route"
+                ft = QgsFeature()
+                ## set the value 1 to the new field "ID"
+                ft.setAttributes([1])
+                line_points = []
+                for i in range(len(self.planner.routes[j].path)):
+                    # if j == 0:
+                    if (i + 1) < len(self.planner.routes[j].path):
+                        line_points.append(QgsPoint(self.planner.routes[j].path[i][0], self.planner.routes[j].path[i][1]))
+                ## set the geometry defined from the point X: 50, Y: 100
+                ft.setGeometry(QgsGeometry.fromPolyline(line_points))
+                ## finally insert the feature
+                provider.addFeatures([ft])
+
+                ## set color
+                symbols = vl.rendererV2().symbols()
+                sym = symbols[0]
+                if j < (len(self.color_list) - 1):
+                    color = self.color_list[j]
+                    sym.setColor(QColor.fromRgb(color[0], color[1], color[2]))
+                sym.setWidth(2)
+
+                ## add layer to the registry and over the map canvas
+                QgsMapLayerRegistry.instance().addMapLayer(vl)
+
+                # self.activate_group_box_calculator(True)
+        else:
+            # if "Fail" in self.emission_calculator.emission_summary:
+            #     self.dlg.textEditSummary.append(self.emission_calculator.emission_summary["Fail"])
+            #     self.dlg.textEditSummary.append("")
+            # # self.dlg.textEditSummary.append("Sorry, for defined parameters no road is available.")
+            # # self.dlg.textEditSummary.append("")
+            # self.activate_group_box_calculator(False)
+            pass
+
 
     def onEmissionStart(self):
-        self.dlg.widgetLoading.setShown(True)
-        self.overlay.show()
+        self.onRoadEmissionPlannerStart()
+        pass
+
+
+        # self.dlg.widgetLoading.setShown(True)
+        # self.overlay.show()
 
         # self.emission_calculator.calculate_nox = self.dlg.checkBoxNox.isChecked()
         # self.emission_calculator.calculate_co = self.dlg.checkBoxCo.isChecked()
@@ -440,7 +539,11 @@ class RoadEmissionCalculator:
         # self.emission_calculator.cumulative = self.dlg.checkBoxCumulative.isChecked()
         # self.emissionTask.set_calculator_lib(self.emission_calculator)
 
-        self.emissionTask.start()
+        # self.emissionTask.start()
+
+
+
+
 
     def onEmissionFinished(self):
         self.overlay.hide()
