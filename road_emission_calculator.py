@@ -95,6 +95,14 @@ class RoadEmissionCalculator:
 
         # Declare instance attributes
         self.actions = []
+        self.categories = []
+        self.selected_category = []
+        self.selected_fuel = []
+        self.selected_segment = []
+        self.selected_euro_std = []
+        self.selected_mode = []
+        # self.fuels = []
+        # self.segments = []
         self.menu = self.tr(u'&Road Emission Calculator')
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'RoadEmissionCalculator')
@@ -104,12 +112,6 @@ class RoadEmissionCalculator:
         # same color schema will be use for proposal roads
         self.color_list = [(0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 255, 255),
                            (255, 0, 255), (255, 255, 0), (0, 0, 0), (255, 255, 255)]
-
-        self.dlg.checkBoxNox.setChecked(True)
-        self.dlg.checkBoxCo.setChecked(True)
-        # self.dlg.checkBoxHc.setChecked(True)
-        # self.dlg.checkBoxPm.setChecked(True)
-        # self.dlg.checkBoxFc.setChecked(True)
 
         self.dlg.btnAddStartPoint.clicked.connect(self.add_start_point)
         self.dlg.btnAddEndPoint.clicked.connect(self.add_end_point)
@@ -125,8 +127,11 @@ class RoadEmissionCalculator:
         self.roadEmissionPlanner.plannerFinished.connect(self.onRoadEmissionPlannerFinished)
 
         self.dlg.btnGetEmissions.clicked.connect(self.onRoadEmissionPlannerStart)
-        self.dlg.cmbBoxVehicleType.currentIndexChanged.connect(self.set_vehicle_subsegment)
-        self.dlg.cmbBoxSubsegment.currentIndexChanged.connect(self.set_vehicle_euro_std)
+        self.dlg.cmbBoxVehicleType.currentIndexChanged.connect(self.set_fuels)
+        self.dlg.cmbBoxFuelType.currentIndexChanged.connect(self.set_segments)
+        self.dlg.cmbBoxSubsegment.currentIndexChanged.connect(self.set_euro_std)
+        self.dlg.cmbBoxEuroStd.currentIndexChanged.connect(self.set_mode)
+        self.dlg.cmbBoxMode.currentIndexChanged.connect(self.set_pollutants)
 
         self.dlg.checkBoxShowInGraph.clicked.connect(self.activate_cumulative)
 
@@ -276,7 +281,6 @@ class RoadEmissionCalculator:
     def activate_cumulative(self):
         self.dlg.checkBoxCumulative.setEnabled(self.dlg.checkBoxShowInGraph.isChecked())
 
-
     def set_new_point(self, point_name):
         self.mapTool.point_name = point_name
         self.canvas.setMapTool(self.mapTool)
@@ -393,6 +397,104 @@ class RoadEmissionCalculator:
             # # self.dlg.textEditSummary.append("")
             pass
 
+    def set_categories(self):
+        self.categories = emission.session.query(emission.models.Category).all()
+        self.dlg.cmbBoxVehicleType.addItems(list(map(lambda category: category.name, self.categories)))
+        self.selected_category = self.get_object_from_array_by_name(self.categories,
+                                                                    self.dlg.cmbBoxVehicleType.currentText())
+
+    def set_fuels(self):
+        self.dlg.cmbBoxFuelType.clear()
+        self.selected_category = self.get_object_from_array_by_name(self.categories,
+                                                                    self.dlg.cmbBoxVehicleType.currentText())
+        if len(self.selected_category) > 0:
+            filtred_fuels = emission.models.filter_parms(cat=self.selected_category[0])
+            self.fuels = set(x.fuel for x in filtred_fuels)
+            self.dlg.cmbBoxFuelType.addItems(list(map(lambda fuel: fuel.name, self.fuels)))
+
+    def set_segments(self):
+        self.dlg.cmbBoxSubsegment.clear()
+        self.selected_category = self.get_object_from_array_by_name(self.categories,
+                                                                    self.dlg.cmbBoxVehicleType.currentText())
+        self.selected_fuel = self.get_object_from_array_by_name(self.fuels, self.dlg.cmbBoxFuelType.currentText())
+        if len(self.selected_category) > 0 and len(self.selected_fuel) > 0:
+            filtred_segments = emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0])
+            self.segments = set(x.segment for x in filtred_segments)
+            self.dlg.cmbBoxSubsegment.addItems(list(map(lambda segment: str(segment.name), self.segments)))
+            self.selected_segment = self.get_object_from_array_by_name(self.segments,
+                                                                       self.dlg.cmbBoxSubsegment.currentText())
+
+    def set_euro_std(self):
+        self.dlg.cmbBoxEuroStd.clear()
+        self.selected_category = self.get_object_from_array_by_name(self.categories,
+                                                                    self.dlg.cmbBoxVehicleType.currentText())
+        self.selected_fuel = self.get_object_from_array_by_name(self.fuels, self.dlg.cmbBoxFuelType.currentText())
+        self.selected_segment = self.get_object_from_array_by_name(self.segments, self.dlg.cmbBoxSubsegment.currentText())
+        if len(self.selected_category) > 0 and len(self.selected_fuel) > 0 and len(self.selected_segment) > 0:
+            filtred_euro_stds = emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0],segment=self.selected_segment[0])
+            self.euro_stds = set(x.eurostd for x in filtred_euro_stds)
+            self.dlg.cmbBoxEuroStd.addItems(list(map(lambda eurostd: eurostd.name, self.euro_stds)))
+
+    def set_mode(self):
+        self.dlg.cmbBoxMode.clear()
+        self.selected_category = self.get_object_from_array_by_name(self.categories,
+                                                                    self.dlg.cmbBoxVehicleType.currentText())
+        self.selected_fuel = self.get_object_from_array_by_name(self.fuels, self.dlg.cmbBoxFuelType.currentText())
+        self.selected_segment = self.get_object_from_array_by_name(self.segments,
+                                                                   self.dlg.cmbBoxSubsegment.currentText())
+        self.selected_euro_std = self.get_object_from_array_by_name(self.euro_stds, self.dlg.cmbBoxEuroStd.currentText())
+        if len(self.selected_category) > 0 and len(self.selected_fuel) > 0 and len(self.selected_segment) > 0 and len(self.selected_euro_std) > 0:
+            filtred_modes = emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0], segment=self.selected_segment[0],
+                                                             eurostd=self.selected_euro_std[0])
+            self.modes = set(x.mode for x in filtred_modes)
+            self.dlg.cmbBoxMode.addItems(list(map(lambda mode: mode.name, self.modes)))
+
+    def set_pollutants(self):
+        self.disable_all_pollutants()
+        self.selected_category = self.get_object_from_array_by_name(self.categories,
+                                                                    self.dlg.cmbBoxVehicleType.currentText())
+        self.selected_fuel = self.get_object_from_array_by_name(self.fuels, self.dlg.cmbBoxFuelType.currentText())
+        self.selected_segment = self.get_object_from_array_by_name(self.segments,
+                                                                   self.dlg.cmbBoxSubsegment.currentText())
+        self.selected_euro_std = self.get_object_from_array_by_name(self.euro_stds,
+                                                                    self.dlg.cmbBoxEuroStd.currentText())
+        self.selected_mode = self.get_object_from_array_by_name(self.modes, self.dlg.cmbBoxMode.currentText())
+        if len(self.selected_category) > 0 and len(self.selected_fuel) > 0 and len(self.selected_segment) > 0 and len(self.selected_euro_std) > 0 and len(self.selected_mode):
+            filtred_pollutants = emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0],
+                                                              segment=self.selected_segment[0],
+                                                         eurostd=self.selected_euro_std[0], mode=self.selected_mode[0])
+            pollutants = list(map(lambda pollutant: pollutant.name, set(x.pollutant for x in filtred_pollutants)))
+            print (pollutants)
+            self.activate_pollutants(pollutants)
+
+    def activate_pollutants(self, pollutants):
+        if "CO" in pollutants:
+            self.dlg.checkBoxCo.setEnabled(True)
+        if "NOx" in pollutants:
+            self.dlg.checkBoxNox.setEnabled(True)
+        if "VOC" in pollutants:
+            self.dlg.checkBoxVoc.setEnabled(True)
+        if "EC" in pollutants:
+            self.dlg.checkBoxEc.setEnabled(True)
+        if "PM Exhaust" in pollutants:
+            self.dlg.checkBoxPmExhaust.setEnabled(True)
+        if "CH4" in pollutants:
+            self.dlg.checkBoxCh4.setEnabled(True)
+
+    def disable_all_pollutants(self):
+        self.dlg.checkBoxCo.setEnabled(False)
+        self.dlg.checkBoxNox.setEnabled(False)
+        self.dlg.checkBoxVoc.setEnabled(False)
+        self.dlg.checkBoxEc.setEnabled(False)
+        self.dlg.checkBoxPmExhaust.setEnabled(False)
+        self.dlg.checkBoxCh4.setEnabled(False)
+
+
+    def get_object_from_array_by_name(self, array, name):
+        if len(array) == 0:
+            return []
+        else:
+            return list(filter(lambda obj: obj.name == name, array))
 
 
     def run(self):
@@ -400,10 +502,17 @@ class RoadEmissionCalculator:
         # set input parameters to default when the dialog has been closed and open again
         self.dlg.cmbBoxVehicleType.clear()
         self.dlg.cmbBoxFuelType.clear()
-        # self.dlg.cmbBoxType.addItems(self.emission_calculator.emissionJson.get_types())
-        # print filter(lambda x: not x.startswith('_'), emission.vehicles.VehicleTypes.__dict__.keys())
-        self.dlg.cmbBoxVehicleType.addItems(filter(lambda x: not x.startswith('_'), emission.vehicles.VehicleTypes.__dict__.keys()))
-        self.dlg.cmbBoxFuelType.addItems(filter(lambda x: not x.startswith('_'), emission.vehicles.FuelTypes.__dict__.keys()))
+        self.dlg.cmbBoxSubsegment.clear()
+        self.dlg.cmbBoxEuroStd.clear()
+        self.dlg.cmbBoxMode.clear()
+
+        self.set_categories()
+        self.set_fuels()
+        self.set_segments()
+        self.set_euro_std()
+        self.set_mode()
+        self.set_pollutants()
+
         self.dlg.cmbBoxLoad.clear()
         self.dlg.cmbBoxLoad.addItems(["0", "50", "100"])
         self.dlg.lineEditStartX.setText("")

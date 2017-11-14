@@ -1,5 +1,4 @@
 from PyQt4.QtCore import *
-import emission
 
 
 class RoadEmissionPlannerThread(QThread):
