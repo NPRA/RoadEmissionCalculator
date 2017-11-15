@@ -33,6 +33,7 @@ from settings import SettingsWidget
 import sys
 import pip
 import os.path
+import matplotlib.pyplot as plt
 
 plugin_dir = os.path.dirname(__file__)
 emissionCalculator_dir = os.path.join(plugin_dir, 'emission')
@@ -385,26 +386,27 @@ class RoadEmissionCalculator:
 
     def road_emission_planner_finished(self):
         self.dlg.textEditSummary.clear()
-        if len(self.planner.routes) > 0:
-            for j in range(len(self.planner.routes)):
-                self.dlg.textEditSummary.append("Route" + str(j + 1) + ":")
-                distance = self.planner.routes[j].distance / 1000
-                hours, minutes = divmod(self.planner.routes[j].minutes, 60)
+        routes = self.planner.routes
+        pollutant_types = self.planner.pollutants.keys()
+        if len(routes) > 0:
+            for idx, route in enumerate(routes):
+                self.dlg.textEditSummary.append("Route" + str(idx + 1) + ":")
+                distance = route.distance / 1000
+                hours, minutes = divmod(route.minutes, 60)
                 hours = int(hours)
                 minutes = int(minutes)
                 self.dlg.textEditSummary.append(
                     "Length: " + str(distance) + " km, driving time: " + str(hours) + " hours and " + str(
                         minutes) + " minutes.")
                 self.dlg.textEditSummary.append("")
-                pollutant_types = self.planner.pollutants.keys()
                 for pt in pollutant_types:
-                    self.dlg.textEditSummary.append(("    {} = {}".format(pt, self.planner.routes[j].total_emission(pt))))
+                    self.dlg.textEditSummary.append(("    {} = {}".format(pt, route.total_emission(pt))))
 
                 self.dlg.textEditSummary.append("")
                 self.dlg.textEditSummary.append("")
 
                 ## create an empty memory layer
-                vl = QgsVectorLayer("LineString", "Route" + str(j + 1), "memory")
+                vl = QgsVectorLayer("LineString", "Route" + str(idx + 1), "memory")
                 ## define and add a field ID to memory layer "Route"
                 provider = vl.dataProvider()
                 provider.addAttributes([QgsField("ID", QVariant.Int)])
@@ -413,10 +415,10 @@ class RoadEmissionCalculator:
                 ## set the value 1 to the new field "ID"
                 ft.setAttributes([1])
                 line_points = []
-                for i in range(len(self.planner.routes[j].path)):
+                for i in range(len(route.path)):
                     # if j == 0:
-                    if (i + 1) < len(self.planner.routes[j].path):
-                        line_points.append(QgsPoint(self.planner.routes[j].path[i][0], self.planner.routes[j].path[i][1]))
+                    if (i + 1) < len(route.path):
+                        line_points.append(QgsPoint(route.path[i][0], route.path[i][1]))
                 ## set the geometry defined from the point X: 50, Y: 100
                 ft.setGeometry(QgsGeometry.fromPolyline(line_points))
                 ## finally insert the feature
@@ -425,13 +427,38 @@ class RoadEmissionCalculator:
                 ## set color
                 symbols = vl.rendererV2().symbols()
                 sym = symbols[0]
-                if j < (len(self.color_list) - 1):
-                    color = self.color_list[j]
+                if idx < (len(self.color_list) - 1):
+                    color = self.color_list[idx]
                     sym.setColor(QColor.fromRgb(color[0], color[1], color[2]))
                 sym.setWidth(2)
 
                 ## add layer to the registry and over the map canvas
                 QgsMapLayerRegistry.instance().addMapLayer(vl)
+
+            ## Show pollutant results in graph
+            if self.dlg.checkBoxShowInGraph.isChecked():
+                fig = plt.figure()
+                figs = []
+
+                for idx, pt in enumerate(pollutant_types):
+                    num_plots = 100 * len(routes[0].pollutants) + 10 + idx + 1
+                    ax = fig.add_subplot(num_plots)
+                    ax.set_title(pt)
+                    ax.set_ylim(0, max(routes[0].pollutants[pt]) + 1)
+                    figs.append(ax)
+
+                for r in routes:
+                    for idx, pt in enumerate(pollutant_types):
+                        ax = figs[idx]
+                        ax.plot(r.distances[0], r.pollutants[pt])
+
+                ax = figs[-1]
+                labels = ["Route " + str(i + 1) for i in range(len(routes))]
+                pos = (len(figs) / 10.0) * (-1)
+                ax.legend(labels, loc=(0, pos), ncol=len(routes))
+                plt.show()
+
+
         else:
             # if "Fail" in self.emission_calculator.emission_summary:
             #     self.dlg.textEditSummary.append(self.emission_calculator.emission_summary["Fail"])
