@@ -124,9 +124,9 @@ class RoadEmissionCalculator:
         self.overlay.hide()
 
         self.roadEmissionPlanner = RoadEmissionPlannerThread()
-        self.roadEmissionPlanner.plannerFinished.connect(self.onRoadEmissionPlannerFinished)
+        self.roadEmissionPlanner.plannerFinished.connect(self.on_road_emission_planner_finished)
 
-        self.dlg.btnGetEmissions.clicked.connect(self.onRoadEmissionPlannerStart)
+        self.dlg.btnGetEmissions.clicked.connect(self.on_road_emission_planner_start)
         self.dlg.cmbBoxVehicleType.currentIndexChanged.connect(self.set_fuels)
         self.dlg.cmbBoxFuelType.currentIndexChanged.connect(self.set_segments)
         self.dlg.cmbBoxSubsegment.currentIndexChanged.connect(self.set_euro_std)
@@ -325,31 +325,68 @@ class RoadEmissionCalculator:
     def disableUseOfGlobalCrs(self):
         self.s.setValue("/Projections/defaultBehaviour", self.oldValidation)
 
-    def onRoadEmissionPlannerStart(self):
+    def on_road_emission_planner_start(self):
         self.dlg.widgetLoading.setShown(True)
         start = [float(self.dlg.lineEditStartX.text()), float(self.dlg.lineEditStartY.text())]
         stop = [float(self.dlg.lineEditEndX.text()), float(self.dlg.lineEditEndY.text())]
         fuel_diesel = emission.vehicles.FuelTypes.DIESEL
-        vehicle = emission.vehicles.Truck(fuel_diesel)
+
+        # print ("Fuel diesel {}". format(fuel_diesel))
+        # print ("Selected fuel {}").format(self.dlg.cmbBoxFuelType.currentText())
+        vehicle = emission.vehicles.Vehicle
+
+        type_category = emission.vehicles.Vehicle.get_type_for_category(self.dlg.cmbBoxVehicleType.currentText())
+        if type_category == emission.vehicles.VehicleTypes.CAR:
+            vehicle = emission.vehicles.Car()
+        if type_category == emission.vehicles.VehicleTypes.BUS:
+            vehicle = emission.vehicles.Bus()
+            vehicle.length = self.dlg.lineEditLength.text()
+            vehicle.height = self.dlg.lineEditHeight.text()
+            vehicle.load = self.dlg.cmbBoxLoad.currentText()
+        if type_category == emission.vehicles.VehicleTypes.TRUCK:
+            vehicle = emission.vehicles.Truck()
+            vehicle.length = self.dlg.lineEditLength.text()
+            vehicle.height = self.dlg.lineEditHeight.text()
+            vehicle.load = self.dlg.cmbBoxLoad.currentText()
+        if type_category == emission.vehicles.VehicleTypes.LCATEGORY:
+            vehicle = emission.vehicles.LCategory()
+        if type_category == emission.vehicles.VehicleTypes.VAN:
+            vehicle = emission.vehicles.Van()
+
+        vehicle.fuel_type = self.dlg.cmbBoxFuelType.currentText()
+        vehicle.segment = self.dlg.cmbBoxSubsegment.currentText()
+        vehicle.euro_std = self.dlg.cmbBoxEuroStd.currentText()
+        vehicle.mode = self.dlg.cmbBoxMode.currentText()
 
         self.planner = emission.Planner(start, stop, vehicle)
-        self.planner.add_pollutant(emission.PollutantTypes.NOx)
-        self.planner.add_pollutant(emission.PollutantTypes.CO)
+
+        if self.dlg.checkBoxCo.isEnabled() and self.dlg.checkBoxCo.isChecked():
+            self.planner.add_pollutant(emission.PollutantTypes.CO)
+        if self.dlg.checkBoxNox.isEnabled() and self.dlg.checkBoxNox.isChecked():
+            self.planner.add_pollutant(emission.PollutantTypes.NOx)
+        if self.dlg.checkBoxVoc.isEnabled() and self.dlg.checkBoxVoc.isChecked():
+            self.planner.add_pollutant(emission.PollutantTypes.VOC)
+        if self.dlg.checkBoxEc.isEnabled() and self.dlg.checkBoxEc.isChecked():
+            self.planner.add_pollutant(emission.PollutantTypes.EC)
+        if self.dlg.checkBoxPmExhaust.isEnabled() and self.dlg.checkBoxPmExhaust.isChecked():
+            self.planner.add_pollutant(emission.PollutantTypes.PM_EXHAUST)
+        if self.dlg.checkBoxCh4.isEnabled() and self.dlg.checkBoxCh4.isChecked():
+            self.planner.add_pollutant(emission.PollutantTypes.CH4)
 
         self.overlay.show()
         self.roadEmissionPlanner.set_planner(self.planner)
         self.roadEmissionPlanner.start()
 
-    def onRoadEmissionPlannerFinished(self):
+    def on_road_emission_planner_finished(self):
         self.overlay.hide()
         self.remove_layer("Route")
-        self.roadEmissionPlannerFinished()
+        self.road_emission_planner_finished()
         self.dlg.widgetLoading.setShown(False)
 
-    def roadEmissionPlannerFinished(self):
+    def road_emission_planner_finished(self):
+        self.dlg.textEditSummary.clear()
         if len(self.planner.routes) > 0:
             for j in range(len(self.planner.routes)):
-
                 self.dlg.textEditSummary.append("Route" + str(j + 1) + ":")
                 distance = self.planner.routes[j].distance / 1000
                 hours, minutes = divmod(self.planner.routes[j].minutes, 60)
@@ -358,6 +395,12 @@ class RoadEmissionCalculator:
                 self.dlg.textEditSummary.append(
                     "Length: " + str(distance) + " km, driving time: " + str(hours) + " hours and " + str(
                         minutes) + " minutes.")
+                self.dlg.textEditSummary.append("")
+                pollutant_types = self.planner.pollutants.keys()
+                for pt in pollutant_types:
+                    self.dlg.textEditSummary.append(("    {} = {}".format(pt, self.planner.routes[j].total_emission(pt))))
+
+                self.dlg.textEditSummary.append("")
                 self.dlg.textEditSummary.append("")
 
                 ## create an empty memory layer
@@ -464,21 +507,20 @@ class RoadEmissionCalculator:
                                                               segment=self.selected_segment[0],
                                                          eurostd=self.selected_euro_std[0], mode=self.selected_mode[0])
             pollutants = list(map(lambda pollutant: pollutant.name, set(x.pollutant for x in filtred_pollutants)))
-            print (pollutants)
             self.activate_pollutants(pollutants)
 
     def activate_pollutants(self, pollutants):
-        if "CO" in pollutants:
+        if emission.PollutantTypes.CO in pollutants:
             self.dlg.checkBoxCo.setEnabled(True)
-        if "NOx" in pollutants:
+        if emission.PollutantTypes.NOx in pollutants:
             self.dlg.checkBoxNox.setEnabled(True)
-        if "VOC" in pollutants:
+        if emission.PollutantTypes.VOC in pollutants:
             self.dlg.checkBoxVoc.setEnabled(True)
-        if "EC" in pollutants:
+        if emission.PollutantTypes.EC in pollutants:
             self.dlg.checkBoxEc.setEnabled(True)
-        if "PM Exhaust" in pollutants:
+        if emission.PollutantTypes.PM_EXHAUST in pollutants:
             self.dlg.checkBoxPmExhaust.setEnabled(True)
-        if "CH4" in pollutants:
+        if emission.PollutantTypes.CH4 in pollutants:
             self.dlg.checkBoxCh4.setEnabled(True)
 
     def disable_all_pollutants(self):
