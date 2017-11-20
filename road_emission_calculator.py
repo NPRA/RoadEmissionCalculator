@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt, QVariant, QObject
-from PyQt4.QtGui import QAction, QIcon, QColor, QWidget
+from PyQt4.QtGui import QAction, QIcon, QColor, QWidget, QListWidget, QListWidgetItem
 from qgis.core import QGis, QgsCoordinateTransform, QgsRectangle, QgsPoint, QgsGeometry, QgsCoordinateReferenceSystem
 from qgis.gui import QgsRubberBand
 from Overlay import Overlay
@@ -34,6 +34,7 @@ import sys
 import pip
 import os.path
 import matplotlib.pyplot as plt
+from thewidgetitem import TheWidgetItem
 
 plugin_dir = os.path.dirname(__file__)
 emissionCalculator_dir = os.path.join(plugin_dir, 'emission')
@@ -94,6 +95,7 @@ class RoadEmissionCalculator:
         # Create the dialog (after translation) and keep reference
         self.dlg = RoadEmissionCalculatorDialog()
 
+
         # Declare instance attributes
         self.actions = []
         self.categories = []
@@ -111,8 +113,10 @@ class RoadEmissionCalculator:
 
         # matplolib generate lines in color sequence: blue, green, red, cyan, magenta, yellow, black, white
         # same color schema will be use for proposal roads
-        self.color_list = [(0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 255, 255),
-                           (255, 0, 255), (255, 255, 0), (0, 0, 0), (255, 255, 255)]
+        self.color_list = {0:[0, 0, 255], 1:[0, 255, 0], 2:[255, 0, 0], 3:[0, 255, 255],
+                           4:[255, 0, 255], 5:[255, 255, 0], 6:[0, 0, 0], 7:[255, 255, 255]}
+
+        self.selected_route_id = -1
 
         self.dlg.btnAddStartPoint.clicked.connect(self.add_start_point)
         self.dlg.btnAddEndPoint.clicked.connect(self.add_end_point)
@@ -133,6 +137,8 @@ class RoadEmissionCalculator:
         self.dlg.cmbBoxSubsegment.currentIndexChanged.connect(self.set_euro_std)
         self.dlg.cmbBoxEuroStd.currentIndexChanged.connect(self.set_mode)
         self.dlg.cmbBoxMode.currentIndexChanged.connect(self.set_pollutants)
+        self.dlg.listWidget.itemClicked.connect(self.select_route)
+        self.dlg.cmbBoxSortBy.currentIndexChanged.connect(self.sort_routes_by)
 
         self.dlg.checkBoxShowInGraph.clicked.connect(self.activate_cumulative)
 
@@ -248,7 +254,7 @@ class RoadEmissionCalculator:
         self.dlg.btnAddEndPoint.setIcon(QIcon(os.path.dirname(__file__) + "/images/pencil_64.png"))
         self.dlg.btnRemoveStartPoint.setIcon(QIcon(os.path.dirname(__file__) + "/images/trash_64.png"))
         self.dlg.btnRemoveEndPoint.setIcon(QIcon(os.path.dirname(__file__) + "/images/trash_64.png"))
-        self.dlg.textEditSummary.setReadOnly(True)
+        # self.dlg.textEditSummary.setReadOnly(True)
         self.dlg.lineEditStartX.setReadOnly(True)
         self.dlg.lineEditStartY.setReadOnly(True)
         self.dlg.lineEditEndX.setReadOnly(True)
@@ -301,7 +307,6 @@ class RoadEmissionCalculator:
         lrs = QgsMapLayerRegistry.instance().mapLayers()
         for i in range(len(lrs.keys())):
             if id_name in lrs.keys()[i]:
-                print (lrs.keys()[i])
                 QgsMapLayerRegistry.instance().removeMapLayer(lrs.keys()[i])
 
     def remove_start_point(self):
@@ -361,17 +366,17 @@ class RoadEmissionCalculator:
 
         self.planner = emission.Planner(start, stop, vehicle)
 
-        if self.dlg.checkBoxCo.isEnabled() and self.dlg.checkBoxCo.isChecked():
+        if self.dlg.checkBoxCo.isEnabled():
             self.planner.add_pollutant(emission.PollutantTypes.CO)
-        if self.dlg.checkBoxNox.isEnabled() and self.dlg.checkBoxNox.isChecked():
+        if self.dlg.checkBoxNox.isEnabled():
             self.planner.add_pollutant(emission.PollutantTypes.NOx)
-        if self.dlg.checkBoxVoc.isEnabled() and self.dlg.checkBoxVoc.isChecked():
+        if self.dlg.checkBoxVoc.isEnabled():
             self.planner.add_pollutant(emission.PollutantTypes.VOC)
-        if self.dlg.checkBoxEc.isEnabled() and self.dlg.checkBoxEc.isChecked():
+        if self.dlg.checkBoxEc.isEnabled():
             self.planner.add_pollutant(emission.PollutantTypes.EC)
-        if self.dlg.checkBoxPmExhaust.isEnabled() and self.dlg.checkBoxPmExhaust.isChecked():
+        if self.dlg.checkBoxPmExhaust.isEnabled():
             self.planner.add_pollutant(emission.PollutantTypes.PM_EXHAUST)
-        if self.dlg.checkBoxCh4.isEnabled() and self.dlg.checkBoxCh4.isChecked():
+        if self.dlg.checkBoxCh4.isEnabled():
             self.planner.add_pollutant(emission.PollutantTypes.CH4)
 
         self.overlay.show()
@@ -385,28 +390,50 @@ class RoadEmissionCalculator:
         self.dlg.widgetLoading.setShown(False)
 
     def road_emission_planner_finished(self):
-        self.dlg.textEditSummary.clear()
+        # self.dlg.textEditSummary.clear()
+        self.dlg.cmbBoxSortBy.clear()
+        # self.dlg.listWidget.clear()
         routes = self.planner.routes
         pollutant_types = self.planner.pollutants.keys()
         if len(routes) > 0:
-            for idx, route in enumerate(routes):
-                self.dlg.textEditSummary.append("Route" + str(idx + 1) + ":")
-                distance = route.distance / 1000
-                hours, minutes = divmod(route.minutes, 60)
-                hours = int(hours)
-                minutes = int(minutes)
-                self.dlg.textEditSummary.append(
-                    "Length: " + str(distance) + " km, driving time: " + str(hours) + " hours and " + str(
-                        minutes) + " minutes.")
-                self.dlg.textEditSummary.append("")
-                for pt in pollutant_types:
-                    self.dlg.textEditSummary.append(("    {} = {}".format(pt, route.total_emission(pt))))
+            self.dlg.cmbBoxSortBy.addItem("Distance")
+            self.dlg.cmbBoxSortBy.addItem("Time")
+            self.dlg.cmbBoxSortBy.addItems(pollutant_types)
+            # self.dlg.cmbBoxSortBy.append
+            # self.sort_routes_by()
+            for route in routes:
+                # self.dlg.textEditSummary.append("Route" + str(idx + 1) + ":")
 
-                self.dlg.textEditSummary.append("")
-                self.dlg.textEditSummary.append("")
+                # self.dlg.textEditSummary.append(
+                #     "Length: " + str(distance) + " km, driving time: " + str(hours) + " hours and " + str(
+                #         minutes) + " minutes.")
+                # self.dlg.textEditSummary.append("")
+                # for pt in pollutant_types:
+                #     self.dlg.textEditSummary.append(("    {} = {}".format(pt, route.total_emission(pt))))
+                #
+                # self.dlg.textEditSummary.append("")
+                # self.dlg.textEditSummary.append("")
+
+                # distance = route.distance / 1000
+                # hours, minutes = divmod(route.minutes, 60)
+                # hours = int(hours)
+                # minutes = int(minutes)
+                #
+                # myQCustomQWidget = TheWidgetItem()
+                # myQCustomQWidget.set_route_name("Route" + str(idx + 1))
+                # myQCustomQWidget.set_distance_time(str(distance) + " km", str(hours) + " hours and " + str(
+                #         minutes) + " minutes.")
+                # myQCustomQWidget.hide_all_lbl_pollutants()
+                # for idxPlt, pt in enumerate(pollutant_types):
+                #     myQCustomQWidget.set_pollutants(idxPlt, pt, round(route.total_emission(pt),2))
+                # myQListWidgetItem = QListWidgetItem(self.dlg.listWidget)
+                # myQListWidgetItem.setSizeHint(myQCustomQWidget.sizeHint())
+                # self.dlg.listWidget.addItem(myQListWidgetItem)
+                # self.dlg.listWidget.setItemWidget(myQListWidgetItem, myQCustomQWidget)
+
 
                 ## create an empty memory layer
-                vl = QgsVectorLayer("LineString", "Route" + str(idx + 1), "memory")
+                vl = QgsVectorLayer("LineString", "Route" + str(route.id + 1), "memory")
                 ## define and add a field ID to memory layer "Route"
                 provider = vl.dataProvider()
                 provider.addAttributes([QgsField("ID", QVariant.Int)])
@@ -427,30 +454,51 @@ class RoadEmissionCalculator:
                 ## set color
                 symbols = vl.rendererV2().symbols()
                 sym = symbols[0]
-                if idx < (len(self.color_list) - 1):
-                    color = self.color_list[idx]
-                    sym.setColor(QColor.fromRgb(color[0], color[1], color[2]))
+                # if idx < (len(self.color_list) - 1):
+                print ("Route id: {}".format(route.id))
+                print ("Route color: {}".format(self.color_list[route.id]))
+                # print ("Route color: {}".format(self.color_list[route.id]))
+
+                color = self.color_list[route.id]
+                print ("Color: {}.{}.{}".format(color[0], color[1], color[2]))
+                sym.setColor(QColor.fromRgb(color[0], color[1], color[2]))
                 sym.setWidth(2)
 
                 ## add layer to the registry and over the map canvas
                 QgsMapLayerRegistry.instance().addMapLayer(vl)
+
+            self.sort_routes_by()
 
             ## Show pollutant results in graph
             if self.dlg.checkBoxShowInGraph.isChecked():
                 fig = plt.figure()
                 figs = []
 
-                for idx, pt in enumerate(pollutant_types):
-                    num_plots = 100 * len(routes[0].pollutants) + 10 + idx + 1
-                    ax = fig.add_subplot(num_plots)
-                    ax.set_title(pt)
-                    ax.set_ylim(0, max(routes[0].pollutants[pt]) + 1)
-                    figs.append(ax)
+                grafIdx = 0
+                active_graphs = 0
+
+                for pt in pollutant_types:
+                    if self.pollutant_checked(pt):
+                        active_graphs += 1
+
+                for pt in pollutant_types:
+                    if self.pollutant_checked(pt):
+                        num_plots = 100 * active_graphs + 10 + grafIdx + 1
+                        ax = fig.add_subplot(num_plots)
+                        ax.set_title(pt)
+                        ax.set_ylim(0, max(max(x.pollutants[pt] for x in routes)) + 0.2)
+                        figs.append(ax)
+                        grafIdx += 1
 
                 for r in routes:
-                    for idx, pt in enumerate(pollutant_types):
-                        ax = figs[idx]
-                        ax.plot(r.distances[0], r.pollutants[pt])
+                    grafIdx = 0
+                    for pt in pollutant_types:
+                        if self.pollutant_checked(pt):
+                            ax = figs[grafIdx]
+                            ax.plot(r.distances[0], r.pollutants[pt])
+                            grafIdx += 1
+
+                # print("Fig length: {}".format(len(figs)))
 
                 ax = figs[-1]
                 labels = ["Route " + str(i + 1) for i in range(len(routes))]
@@ -466,6 +514,106 @@ class RoadEmissionCalculator:
             # # self.dlg.textEditSummary.append("Sorry, for defined parameters no road is available.")
             # # self.dlg.textEditSummary.append("")
             pass
+
+    def pollutant_checked(self, plt):
+        if plt == emission.PollutantTypes.CO:
+            return self.dlg.checkBoxCo.isEnabled() and self.dlg.checkBoxCo.isChecked()
+        if plt == emission.PollutantTypes.NOx:
+            return self.dlg.checkBoxNox.isEnabled() and self.dlg.checkBoxNox.isChecked()
+        if plt == emission.PollutantTypes.VOC:
+            return self.dlg.checkBoxVoc.isEnabled() and self.dlg.checkBoxVoc.isChecked()
+        if plt == emission.PollutantTypes.EC:
+            return self.dlg.checkBoxEc.isEnabled() and self.dlg.checkBoxEc.isChecked()
+        if plt == emission.PollutantTypes.PM_EXHAUST:
+            return self.dlg.checkBoxPmExhaust.isEnabled() and self.dlg.checkBoxPmExhaust.isChecked()
+        if plt == emission.PollutantTypes.CH4:
+            return self.dlg.checkBoxCh4.isEnabled() and self.dlg.checkBoxCh4.isChecked()
+
+    def select_route(self):
+        if self.dlg.listWidget.currentItem():
+            route_item = self.dlg.listWidget.itemWidget(self.dlg.listWidget.currentItem())
+            if (route_item.route_id == self.selected_route_id):
+                self.clear_selection()
+                return
+            self.remove_layer("Selected")
+            self.selected_route_id = route_item.route_id
+            route = self.planner.routes[route_item.route_id]
+            ## create an empty memory layer
+            vl = QgsVectorLayer("LineString", "Selected route" + str(route.id + 1), "memory")
+            ## define and add a field ID to memory layer "Route"
+            provider = vl.dataProvider()
+            provider.addAttributes([QgsField("ID", QVariant.Int)])
+            ## create a new feature for the layer "Route"
+            ft = QgsFeature()
+            ## set the value 1 to the new field "ID"
+            ft.setAttributes([1])
+            line_points = []
+
+            for i in range(len(route.path)):
+                # if j == 0:
+                if (i + 1) < len(route.path):
+                    line_points.append(QgsPoint(route.path[i][0], route.path[i][1]))
+            ## set the geometry defined from the point X: 50, Y: 100
+            ft.setGeometry(QgsGeometry.fromPolyline(line_points))
+            ## finally insert the feature
+            provider.addFeatures([ft])
+
+            ## set color
+            symbols = vl.rendererV2().symbols()
+            sym = symbols[0]
+            # if selected_idx < (len(self.color_list) - 1):
+            color = self.color_list[route.id]
+            sym.setColor(QColor.fromRgb(color[0], color[1], color[2]))
+            sym.setWidth(4)
+
+            ## add layer to the registry and over the map canvas
+            QgsMapLayerRegistry.instance().addMapLayer(vl)
+
+    def clear_selection(self):
+        self.remove_layer("Selected")
+        self.dlg.listWidget.clearSelection()
+        self.selected_route_id = -1
+
+    def sort_routes_by(self):
+        # pass
+        routes = self.planner.routes
+        print ("Sort by items count: {} and current name: {}".format(self.dlg.cmbBoxSortBy.count(), self.dlg.cmbBoxSortBy.currentText()))
+        self.dlg.listWidget.clear()
+        self.clear_selection()
+        if len(routes) > 0 and self.dlg.cmbBoxSortBy.count() > 0:
+            print ("Current text: {}".format(self.dlg.cmbBoxSortBy.currentText()))
+            if self.dlg.cmbBoxSortBy.currentText() == "Distance":
+                sorted_after_distance = sorted(routes, key=lambda x: x.distance)
+                for r in sorted_after_distance:
+                    self.add_route_item_to_list_widget(r)
+            elif self.dlg.cmbBoxSortBy.currentText() == "Time":
+                routes.sort()
+                for r in routes:
+                    self.add_route_item_to_list_widget(r)
+            else:
+                sorted_after_pollutant = sorted(routes, key=lambda x: x.total_emission(self.dlg.cmbBoxSortBy.currentText()))
+                for r in sorted_after_pollutant:
+                    self.add_route_item_to_list_widget(r)
+
+    def add_route_item_to_list_widget(self, route):
+        pollutant_types = self.planner.pollutants.keys()
+        distance = route.distance / 1000
+        hours, minutes = divmod(route.minutes, 60)
+        hours = int(hours)
+        minutes = int(minutes)
+
+        myQCustomQWidget = TheWidgetItem()
+        myQCustomQWidget.set_route_name("Route" + str(route.id + 1))
+        myQCustomQWidget.set_route_id(route.id)
+        myQCustomQWidget.set_distance_time(str(distance) + " km", str(hours) + " hours and " + str(
+            minutes) + " minutes.")
+        myQCustomQWidget.hide_all_lbl_pollutants()
+        for idxPlt, pt in enumerate(pollutant_types):
+            myQCustomQWidget.set_pollutants(idxPlt, pt, round(route.total_emission(pt), 2))
+        myQListWidgetItem = QListWidgetItem(self.dlg.listWidget)
+        myQListWidgetItem.setSizeHint(myQCustomQWidget.sizeHint())
+        self.dlg.listWidget.addItem(myQListWidgetItem)
+        self.dlg.listWidget.setItemWidget(myQListWidgetItem, myQCustomQWidget)
 
     def set_categories(self):
         self.categories = emission.session.query(emission.models.Category).all()
@@ -534,9 +682,9 @@ class RoadEmissionCalculator:
                                                               segment=self.selected_segment[0],
                                                          eurostd=self.selected_euro_std[0], mode=self.selected_mode[0])
             pollutants = list(map(lambda pollutant: pollutant.name, set(x.pollutant for x in filtred_pollutants)))
-            self.activate_pollutants(pollutants)
+            self.enable_pollutants(pollutants)
 
-    def activate_pollutants(self, pollutants):
+    def enable_pollutants(self, pollutants):
         if emission.PollutantTypes.CO in pollutants:
             self.dlg.checkBoxCo.setEnabled(True)
         if emission.PollutantTypes.NOx in pollutants:
@@ -588,7 +736,46 @@ class RoadEmissionCalculator:
         self.dlg.lineEditStartY.setText("")
         self.dlg.lineEditEndX.setText("")
         self.dlg.lineEditEndY.setText("")
-        self.dlg.textEditSummary.clear()
+        # self.dlg.textEditSummary.clear()
+
+        # Create QCustomQWidget
+        # self.myQCustomQWidget = TheWidgetItem()
+
+        # Create QListWidgetItem
+        # myQCustomQWidget = TheWidgetItem()
+        # myQCustomQWidget.set_route_name("Route1")
+        # myQCustomQWidget.set_distance_time("35 km", "0 hours 20 minutes")
+        # myQListWidgetItem = QListWidgetItem(self.dlg.listWidget)
+        # myQListWidgetItem.setSizeHint(myQCustomQWidget.sizeHint())
+        # self.dlg.listWidget.addItem(myQListWidgetItem)
+        # self.dlg.listWidget.setItemWidget(myQListWidgetItem, myQCustomQWidget)
+        #
+        # myQCustomQWidget = TheWidgetItem()
+        # myQCustomQWidget.set_route_name("Route2")
+        # myQCustomQWidget.set_distance_time("45 km", "0 hours 49 minutes")
+        # myQListWidgetItem = QListWidgetItem(self.dlg.listWidget)
+        # myQListWidgetItem.setSizeHint(myQCustomQWidget.sizeHint())
+        # self.dlg.listWidget.addItem(myQListWidgetItem)
+        # self.dlg.listWidget.setItemWidget(myQListWidgetItem, myQCustomQWidget)
+
+
+        # for index, name, icon in [
+        #     ('No.1', 'Meyoko', 'icon.png'),
+        #     ('No.2', 'Nyaruko', 'icon.png'),
+        #     ('No.3', 'Louise', 'icon.png')]:
+        #     # Create QCustomQWidget
+        #     myQCustomQWidget = TheWidgetItem()
+        #     myQCustomQWidget.setTextUp(index)
+        #     myQCustomQWidget.setTextDown(name)
+        #     myQCustomQWidget.setIcon(icon)
+        #     # Create QListWidgetItem
+        #     myQListWidgetItem = QListWidgetItem(self.dlg.listWidget)
+        #     # Set size hint
+        #     myQListWidgetItem.setSizeHint(myQCustomQWidget.sizeHint())
+        #     # Add QListWidgetItem into QListWidget
+        #     self.dlg.listWidget.addItem(myQListWidgetItem)
+        #     self.dlg.listWidget.setItemWidget(myQListWidgetItem, myQCustomQWidget)
+
 
         # show the dialog
         self.dlg.show()
