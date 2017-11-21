@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>794</width>
-    <height>466</height>
+    <height>463</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,34 +35,224 @@
     <set>QDialogButtonBox::Close</set>
    </property>
   </widget>
+  <widget class="QGroupBox" name="groupBox_2">
+   <property name="geometry">
+    <rect>
+     <x>410</x>
+     <y>0</y>
+     <width>371</width>
+     <height>411</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Summary</string>
+   </property>
+   <widget class="QListWidget" name="listWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>60</y>
+      <width>351</width>
+      <height>341</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QListWidget {  
+                    border: 1px solid lightgrey; border-radius:5px; background-color: palette(base);}
+</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="cmbBoxSortBy">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>30</y>
+      <width>104</width>
+      <height>26</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_12">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>60</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Sort by:</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QWidget" name="widgetLoading" native="true">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>5</x>
+     <y>5</y>
+     <width>785</width>
+     <height>445</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>785</width>
+     <height>445</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>785</width>
+     <height>445</height>
+    </size>
+   </property>
+  </widget>
+  <widget class="QGroupBox" name="groupBox">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>320</y>
+     <width>391</width>
+     <height>121</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Show results in graph</string>
+   </property>
+   <widget class="QCheckBox" name="checkBoxShowInGraph">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>157</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Show results in graph</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBoxCumulative">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>30</y>
+      <width>131</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Cumulative curve</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>60</y>
+      <width>65</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Pollutants:</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBoxNox">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>82</y>
+      <width>52</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>NOx</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBoxVoc">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>62</y>
+      <width>51</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>VOC</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBoxCo">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>60</y>
+      <width>45</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>CO</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBoxEc">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>82</y>
+      <width>45</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>EC</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBoxCh4">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>82</y>
+      <width>87</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>CH4</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBoxPmExhaust">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>60</y>
+      <width>91</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>PM Exhaust</string>
+    </property>
+   </widget>
+  </widget>
   <widget class="QGroupBox" name="groupBoxCalculator">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>0</y>
      <width>391</width>
-     <height>441</height>
+     <height>321</height>
     </rect>
    </property>
    <property name="title">
     <string>Emission Calculator</string>
    </property>
-   <widget class="QPushButton" name="btnGetEmissions">
-    <property name="geometry">
-     <rect>
-      <x>9</x>
-      <y>400</y>
-      <width>163</width>
-      <height>32</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Calculate Emissions</string>
-    </property>
-    <property name="autoDefault">
-     <bool>false</bool>
-    </property>
-   </widget>
    <widget class="QLabel" name="label_7">
     <property name="geometry">
      <rect>
@@ -162,110 +352,6 @@
       <width>201</width>
       <height>26</height>
      </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>16</x>
-      <y>320</y>
-      <width>65</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Pollutants:</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="checkBoxCo">
-    <property name="geometry">
-     <rect>
-      <x>90</x>
-      <y>318</y>
-      <width>45</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>CO</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="checkBoxPmExhaust">
-    <property name="geometry">
-     <rect>
-      <x>270</x>
-      <y>318</y>
-      <width>91</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>PM Exhaust</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="checkBoxVoc">
-    <property name="geometry">
-     <rect>
-      <x>180</x>
-      <y>320</y>
-      <width>51</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>VOC</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="checkBoxNox">
-    <property name="geometry">
-     <rect>
-      <x>90</x>
-      <y>340</y>
-      <width>52</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>NOx</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="checkBoxEc">
-    <property name="geometry">
-     <rect>
-      <x>180</x>
-      <y>340</y>
-      <width>45</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>EC</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="checkBoxShowInGraph">
-    <property name="geometry">
-     <rect>
-      <x>15</x>
-      <y>370</y>
-      <width>157</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Show results in graph</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="checkBoxCumulative">
-    <property name="geometry">
-     <rect>
-      <x>180</x>
-      <y>370</y>
-      <width>131</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Cumulative curve</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_5">
@@ -645,19 +731,6 @@
      <bool>false</bool>
     </property>
    </widget>
-   <widget class="QCheckBox" name="checkBoxCh4">
-    <property name="geometry">
-     <rect>
-      <x>270</x>
-      <y>340</y>
-      <width>87</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>CH4</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
@@ -682,86 +755,28 @@
     </property>
    </widget>
   </widget>
-  <widget class="QGroupBox" name="groupBox_2">
+  <widget class="QPushButton" name="btnGetEmissions">
    <property name="geometry">
     <rect>
      <x>410</x>
-     <y>0</y>
-     <width>371</width>
-     <height>411</height>
+     <y>420</y>
+     <width>191</width>
+     <height>32</height>
     </rect>
    </property>
-   <property name="title">
-    <string>Summary</string>
+   <property name="text">
+    <string>Calculate Emissions</string>
    </property>
-   <widget class="QListWidget" name="listWidget">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>60</y>
-      <width>351</width>
-      <height>341</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QListWidget {  
-                    border: 1px solid lightgrey; border-radius:5px; background-color: palette(base);}
-</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="cmbBoxSortBy">
-    <property name="geometry">
-     <rect>
-      <x>70</x>
-      <y>30</y>
-      <width>104</width>
-      <height>26</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_12">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>30</y>
-      <width>60</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Sort by:</string>
-    </property>
-   </widget>
-  </widget>
-  <widget class="QWidget" name="widgetLoading" native="true">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
-   <property name="geometry">
-    <rect>
-     <x>5</x>
-     <y>5</y>
-     <width>785</width>
-     <height>445</height>
-    </rect>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>785</width>
-     <height>445</height>
-    </size>
-   </property>
-   <property name="maximumSize">
-    <size>
-     <width>785</width>
-     <height>445</height>
-    </size>
+   <property name="autoDefault">
+    <bool>false</bool>
    </property>
   </widget>
   <zorder>widgetLoading</zorder>
   <zorder>button_box</zorder>
-  <zorder>groupBoxCalculator</zorder>
   <zorder>groupBox_2</zorder>
+  <zorder>groupBox</zorder>
+  <zorder>groupBoxCalculator</zorder>
+  <zorder>btnGetEmissions</zorder>
  </widget>
  <resources/>
  <connections>

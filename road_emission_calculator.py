@@ -617,7 +617,9 @@ class RoadEmissionCalculator:
 
     def set_categories(self):
         self.categories = emission.session.query(emission.models.Category).all()
-        self.dlg.cmbBoxVehicleType.addItems(list(map(lambda category: category.name, self.categories)))
+        list_categories = list(map(lambda category: category.name, self.categories))
+        list_categories.sort()
+        self.dlg.cmbBoxVehicleType.addItems(list_categories)
         self.selected_category = self.get_object_from_array_by_name(self.categories,
                                                                     self.dlg.cmbBoxVehicleType.currentText())
 
@@ -628,7 +630,9 @@ class RoadEmissionCalculator:
         if len(self.selected_category) > 0:
             filtred_fuels = emission.models.filter_parms(cat=self.selected_category[0])
             self.fuels = set(x.fuel for x in filtred_fuels)
-            self.dlg.cmbBoxFuelType.addItems(list(map(lambda fuel: fuel.name, self.fuels)))
+            list_fuels = list(map(lambda fuel: fuel.name, self.fuels))
+            list_fuels.sort()
+            self.dlg.cmbBoxFuelType.addItems(list_fuels)
 
     def set_segments(self):
         self.dlg.cmbBoxSubsegment.clear()
@@ -638,7 +642,9 @@ class RoadEmissionCalculator:
         if len(self.selected_category) > 0 and len(self.selected_fuel) > 0:
             filtred_segments = emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0])
             self.segments = set(x.segment for x in filtred_segments)
-            self.dlg.cmbBoxSubsegment.addItems(list(map(lambda segment: str(segment.name), self.segments)))
+            list_segments = list(map(lambda segment: str(segment.name), self.segments))
+            list_segments.sort()
+            self.dlg.cmbBoxSubsegment.addItems(list_segments)
             self.selected_segment = self.get_object_from_array_by_name(self.segments,
                                                                        self.dlg.cmbBoxSubsegment.currentText())
 
@@ -651,7 +657,9 @@ class RoadEmissionCalculator:
         if len(self.selected_category) > 0 and len(self.selected_fuel) > 0 and len(self.selected_segment) > 0:
             filtred_euro_stds = emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0],segment=self.selected_segment[0])
             self.euro_stds = set(x.eurostd for x in filtred_euro_stds)
-            self.dlg.cmbBoxEuroStd.addItems(list(map(lambda eurostd: eurostd.name, self.euro_stds)))
+            list_euro_stds = list(map(lambda eurostd: eurostd.name, self.euro_stds))
+            list_euro_stds.sort()
+            self.dlg.cmbBoxEuroStd.addItems(list_euro_stds)
 
     def set_mode(self):
         self.dlg.cmbBoxMode.clear()
@@ -665,7 +673,9 @@ class RoadEmissionCalculator:
             filtred_modes = emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0], segment=self.selected_segment[0],
                                                              eurostd=self.selected_euro_std[0])
             self.modes = set(x.mode for x in filtred_modes)
-            self.dlg.cmbBoxMode.addItems(list(map(lambda mode: mode.name, self.modes)))
+            list_modes = list(map(lambda mode: mode.name, self.modes))
+            list_modes.sort()
+            self.dlg.cmbBoxMode.addItems(list_modes)
 
     def set_pollutants(self):
         self.disable_all_pollutants()
