@@ -116,6 +116,13 @@ class RoadEmissionCalculator:
         self.color_list = {0:[0, 0, 255], 1:[0, 255, 0], 2:[255, 0, 0], 3:[0, 255, 255],
                            4:[255, 0, 255], 5:[255, 255, 0], 6:[0, 0, 0], 7:[255, 255, 255]}
 
+        self.pollutants_checkboxes = {emission.PollutantTypes.CO: self.dlg.checkBoxCo,
+                                      emission.PollutantTypes.NOx: self.dlg.checkBoxNox,
+                                      emission.PollutantTypes.VOC: self.dlg.checkBoxVoc,
+                                      emission.PollutantTypes.EC: self.dlg.checkBoxEc,
+                                      emission.PollutantTypes.PM_EXHAUST: self.dlg.checkBoxPmExhaust,
+                                      emission.PollutantTypes.CH4: self.dlg.checkBoxCh4}
+
         self.selected_route_id = -1
 
         self.dlg.btnAddStartPoint.clicked.connect(self.add_start_point)
@@ -141,6 +148,8 @@ class RoadEmissionCalculator:
         self.dlg.cmbBoxSortBy.currentIndexChanged.connect(self.sort_routes_by)
 
         self.dlg.checkBoxShowInGraph.clicked.connect(self.activate_cumulative)
+
+        self.dlg.btnSaveSettings.clicked.connect(self.save_settings)
 
         # init with default values
         self.dlg.lineEditLength.setText('12')
@@ -272,18 +281,18 @@ class RoadEmissionCalculator:
         del self.toolbar
         self.canvas.unsetMapTool(self.mapTool)
 
-    def set_vehicle_subsegment(self):
-        self.dlg.cmbBoxSubsegment.clear()
-        if self.dlg.cmbBoxVehicleType.currentText() == 'CAR':
-            segments = emission.vehicles.Car.type
-            self.dlg.cmbBoxSubsegment.addItems([list(d)[0] for d in segments])
+    # def set_vehicle_subsegment(self):
+    #     self.dlg.cmbBoxSubsegment.clear()
+    #     if self.dlg.cmbBoxVehicleType.currentText() == 'CAR':
+    #         segments = emission.vehicles.Car.type
+    #         self.dlg.cmbBoxSubsegment.addItems([list(d)[0] for d in segments])
 
-    def set_vehicle_euro_std(self):
-
-        self.dlg.cmbBoxEuroStd.clear()
-        if self.dlg.cmbBoxVehicleType.currentText() == 'CAR':
-            segments = emission.vehicles.Car.type
-            self.dlg.cmbBoxEuroStd.addItems(list(filter(lambda y: y != None, [x.get(self.dlg.cmbBoxSubsegment.currentText()) for x in segments]))[0])
+    # def set_vehicle_euro_std(self):
+    #
+    #     self.dlg.cmbBoxEuroStd.clear()
+    #     if self.dlg.cmbBoxVehicleType.currentText() == 'CAR':
+    #         segments = emission.vehicles.Car.type
+    #         self.dlg.cmbBoxEuroStd.addItems(list(filter(lambda y: y != None, [x.get(self.dlg.cmbBoxSubsegment.currentText()) for x in segments]))[0])
 
     def activate_cumulative(self):
         self.dlg.checkBoxCumulative.setEnabled(self.dlg.checkBoxShowInGraph.isChecked())
@@ -335,10 +344,6 @@ class RoadEmissionCalculator:
         self.dlg.widgetLoading.setShown(True)
         start = [float(self.dlg.lineEditStartX.text()), float(self.dlg.lineEditStartY.text())]
         stop = [float(self.dlg.lineEditEndX.text()), float(self.dlg.lineEditEndY.text())]
-        fuel_diesel = emission.vehicles.FuelTypes.DIESEL
-
-        # print ("Fuel diesel {}". format(fuel_diesel))
-        # print ("Selected fuel {}").format(self.dlg.cmbBoxFuelType.currentText())
         vehicle = emission.vehicles.Vehicle
 
         type_category = emission.vehicles.Vehicle.get_type_for_category(self.dlg.cmbBoxVehicleType.currentText())
@@ -366,18 +371,9 @@ class RoadEmissionCalculator:
 
         self.planner = emission.Planner(start, stop, vehicle)
 
-        if self.dlg.checkBoxCo.isEnabled():
-            self.planner.add_pollutant(emission.PollutantTypes.CO)
-        if self.dlg.checkBoxNox.isEnabled():
-            self.planner.add_pollutant(emission.PollutantTypes.NOx)
-        if self.dlg.checkBoxVoc.isEnabled():
-            self.planner.add_pollutant(emission.PollutantTypes.VOC)
-        if self.dlg.checkBoxEc.isEnabled():
-            self.planner.add_pollutant(emission.PollutantTypes.EC)
-        if self.dlg.checkBoxPmExhaust.isEnabled():
-            self.planner.add_pollutant(emission.PollutantTypes.PM_EXHAUST)
-        if self.dlg.checkBoxCh4.isEnabled():
-            self.planner.add_pollutant(emission.PollutantTypes.CH4)
+        for x in self.pollutants_checkboxes:
+            if self.pollutants_checkboxes[x].isEnabled():
+                self.planner.add_pollutant(x)
 
         self.overlay.show()
         self.roadEmissionPlanner.set_planner(self.planner)
@@ -455,12 +451,12 @@ class RoadEmissionCalculator:
                 symbols = vl.rendererV2().symbols()
                 sym = symbols[0]
                 # if idx < (len(self.color_list) - 1):
-                print ("Route id: {}".format(route.id))
-                print ("Route color: {}".format(self.color_list[route.id]))
+                # print ("Route id: {}".format(route.id))
+                # print ("Route color: {}".format(self.color_list[route.id]))
                 # print ("Route color: {}".format(self.color_list[route.id]))
 
                 color = self.color_list[route.id]
-                print ("Color: {}.{}.{}".format(color[0], color[1], color[2]))
+                # print ("Color: {}.{}.{}".format(color[0], color[1], color[2]))
                 sym.setColor(QColor.fromRgb(color[0], color[1], color[2]))
                 sym.setWidth(2)
 
@@ -478,11 +474,11 @@ class RoadEmissionCalculator:
                 active_graphs = 0
 
                 for pt in pollutant_types:
-                    if self.pollutant_checked(pt):
+                    if self.pollutants_checkboxes[pt].isEnabled() and self.pollutants_checkboxes[pt].isChecked():
                         active_graphs += 1
 
                 for pt in pollutant_types:
-                    if self.pollutant_checked(pt):
+                    if self.pollutants_checkboxes[pt].isEnabled() and self.pollutants_checkboxes[pt].isChecked():
                         num_plots = 100 * active_graphs + 10 + grafIdx + 1
                         ax = fig.add_subplot(num_plots)
                         ax.set_title(pt)
@@ -493,9 +489,18 @@ class RoadEmissionCalculator:
                 for r in routes:
                     grafIdx = 0
                     for pt in pollutant_types:
-                        if self.pollutant_checked(pt):
+
+                        if self.pollutants_checkboxes[pt].isEnabled() and self.pollutants_checkboxes[pt].isChecked():
                             ax = figs[grafIdx]
-                            ax.plot(r.distances[0], r.pollutants[pt])
+                            if self.dlg.checkBoxCumulative.isChecked():
+                                cumulative_values = []
+                                cumulative_value = 0
+                                for x in r.pollutants[pt]:
+                                    cumulative_value += x
+                                    cumulative_values.append(cumulative_value)
+                                ax.plot(r.distances[0], cumulative_values)
+                            else:
+                                ax.plot(r.distances[0], r.pollutants[pt])
                             grafIdx += 1
 
                 # print("Fig length: {}".format(len(figs)))
@@ -514,20 +519,6 @@ class RoadEmissionCalculator:
             # # self.dlg.textEditSummary.append("Sorry, for defined parameters no road is available.")
             # # self.dlg.textEditSummary.append("")
             pass
-
-    def pollutant_checked(self, plt):
-        if plt == emission.PollutantTypes.CO:
-            return self.dlg.checkBoxCo.isEnabled() and self.dlg.checkBoxCo.isChecked()
-        if plt == emission.PollutantTypes.NOx:
-            return self.dlg.checkBoxNox.isEnabled() and self.dlg.checkBoxNox.isChecked()
-        if plt == emission.PollutantTypes.VOC:
-            return self.dlg.checkBoxVoc.isEnabled() and self.dlg.checkBoxVoc.isChecked()
-        if plt == emission.PollutantTypes.EC:
-            return self.dlg.checkBoxEc.isEnabled() and self.dlg.checkBoxEc.isChecked()
-        if plt == emission.PollutantTypes.PM_EXHAUST:
-            return self.dlg.checkBoxPmExhaust.isEnabled() and self.dlg.checkBoxPmExhaust.isChecked()
-        if plt == emission.PollutantTypes.CH4:
-            return self.dlg.checkBoxCh4.isEnabled() and self.dlg.checkBoxCh4.isChecked()
 
     def select_route(self):
         if self.dlg.listWidget.currentItem():
@@ -695,26 +686,15 @@ class RoadEmissionCalculator:
             self.enable_pollutants(pollutants)
 
     def enable_pollutants(self, pollutants):
-        if emission.PollutantTypes.CO in pollutants:
-            self.dlg.checkBoxCo.setEnabled(True)
-        if emission.PollutantTypes.NOx in pollutants:
-            self.dlg.checkBoxNox.setEnabled(True)
-        if emission.PollutantTypes.VOC in pollutants:
-            self.dlg.checkBoxVoc.setEnabled(True)
-        if emission.PollutantTypes.EC in pollutants:
-            self.dlg.checkBoxEc.setEnabled(True)
-        if emission.PollutantTypes.PM_EXHAUST in pollutants:
-            self.dlg.checkBoxPmExhaust.setEnabled(True)
-        if emission.PollutantTypes.CH4 in pollutants:
-            self.dlg.checkBoxCh4.setEnabled(True)
+        for x in pollutants:
+            self.pollutants_checkboxes[x].setEnabled(True)
 
     def disable_all_pollutants(self):
-        self.dlg.checkBoxCo.setEnabled(False)
-        self.dlg.checkBoxNox.setEnabled(False)
-        self.dlg.checkBoxVoc.setEnabled(False)
-        self.dlg.checkBoxEc.setEnabled(False)
-        self.dlg.checkBoxPmExhaust.setEnabled(False)
-        self.dlg.checkBoxCh4.setEnabled(False)
+        for x in self.pollutants_checkboxes.values():
+            x.setEnabled(False)
+
+    def save_settings(self):
+        pass
 
 
     def get_object_from_array_by_name(self, array, name):
