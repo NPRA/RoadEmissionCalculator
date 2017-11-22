@@ -321,7 +321,7 @@
      <string>Segment</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="cmbBoxSubsegment">
+   <widget class="QComboBox" name="cmbBoxSegment">
     <property name="geometry">
      <rect>
       <x>120</x>

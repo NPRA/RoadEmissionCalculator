@@ -35,6 +35,7 @@ import pip
 import os.path
 import matplotlib.pyplot as plt
 from thewidgetitem import TheWidgetItem
+import json
 
 plugin_dir = os.path.dirname(__file__)
 emissionCalculator_dir = os.path.join(plugin_dir, 'emission')
@@ -141,7 +142,7 @@ class RoadEmissionCalculator:
         self.dlg.btnGetEmissions.clicked.connect(self.on_road_emission_planner_start)
         self.dlg.cmbBoxVehicleType.currentIndexChanged.connect(self.set_fuels)
         self.dlg.cmbBoxFuelType.currentIndexChanged.connect(self.set_segments)
-        self.dlg.cmbBoxSubsegment.currentIndexChanged.connect(self.set_euro_std)
+        self.dlg.cmbBoxSegment.currentIndexChanged.connect(self.set_euro_std)
         self.dlg.cmbBoxEuroStd.currentIndexChanged.connect(self.set_mode)
         self.dlg.cmbBoxMode.currentIndexChanged.connect(self.set_pollutants)
         self.dlg.listWidget.itemClicked.connect(self.select_route)
@@ -150,6 +151,7 @@ class RoadEmissionCalculator:
         self.dlg.checkBoxShowInGraph.clicked.connect(self.activate_cumulative)
 
         self.dlg.btnSaveSettings.clicked.connect(self.save_settings)
+        self.dlg.btnLoadSettings.clicked.connect(self.load_settings)
 
         # init with default values
         self.dlg.lineEditLength.setText('12')
@@ -349,13 +351,11 @@ class RoadEmissionCalculator:
         type_category = emission.vehicles.Vehicle.get_type_for_category(self.dlg.cmbBoxVehicleType.currentText())
         if type_category == emission.vehicles.VehicleTypes.CAR:
             vehicle = emission.vehicles.Car()
-        if type_category == emission.vehicles.VehicleTypes.BUS:
-            vehicle = emission.vehicles.Bus()
-            vehicle.length = self.dlg.lineEditLength.text()
-            vehicle.height = self.dlg.lineEditHeight.text()
-            vehicle.load = self.dlg.cmbBoxLoad.currentText()
-        if type_category == emission.vehicles.VehicleTypes.TRUCK:
-            vehicle = emission.vehicles.Truck()
+        if type_category == emission.vehicles.VehicleTypes.BUS or type_category == emission.vehicles.VehicleTypes.TRUCK:
+            if type_category == emission.vehicles.VehicleTypes.BUS:
+                vehicle = emission.vehicles.Bus()
+            if type_category == emission.vehicles.VehicleTypes.TRUCK:
+                vehicle = emission.vehicles.Truck()
             vehicle.length = self.dlg.lineEditLength.text()
             vehicle.height = self.dlg.lineEditHeight.text()
             vehicle.load = self.dlg.cmbBoxLoad.currentText()
@@ -365,7 +365,7 @@ class RoadEmissionCalculator:
             vehicle = emission.vehicles.Van()
 
         vehicle.fuel_type = self.dlg.cmbBoxFuelType.currentText()
-        vehicle.segment = self.dlg.cmbBoxSubsegment.currentText()
+        vehicle.segment = self.dlg.cmbBoxSegment.currentText()
         vehicle.euro_std = self.dlg.cmbBoxEuroStd.currentText()
         vehicle.mode = self.dlg.cmbBoxMode.currentText()
 
@@ -628,7 +628,7 @@ class RoadEmissionCalculator:
             self.dlg.cmbBoxFuelType.addItems(list_fuels)
 
     def set_segments(self):
-        self.dlg.cmbBoxSubsegment.clear()
+        self.dlg.cmbBoxSegment.clear()
         self.selected_category = self.get_object_from_array_by_name(self.categories,
                                                                     self.dlg.cmbBoxVehicleType.currentText())
         self.selected_fuel = self.get_object_from_array_by_name(self.fuels, self.dlg.cmbBoxFuelType.currentText())
@@ -637,16 +637,16 @@ class RoadEmissionCalculator:
             self.segments = set(x.segment for x in filtred_segments)
             list_segments = list(map(lambda segment: str(segment.name), self.segments))
             list_segments.sort()
-            self.dlg.cmbBoxSubsegment.addItems(list_segments)
+            self.dlg.cmbBoxSegment.addItems(list_segments)
             self.selected_segment = self.get_object_from_array_by_name(self.segments,
-                                                                       self.dlg.cmbBoxSubsegment.currentText())
+                                                                       self.dlg.cmbBoxSegment.currentText())
 
     def set_euro_std(self):
         self.dlg.cmbBoxEuroStd.clear()
         self.selected_category = self.get_object_from_array_by_name(self.categories,
                                                                     self.dlg.cmbBoxVehicleType.currentText())
         self.selected_fuel = self.get_object_from_array_by_name(self.fuels, self.dlg.cmbBoxFuelType.currentText())
-        self.selected_segment = self.get_object_from_array_by_name(self.segments, self.dlg.cmbBoxSubsegment.currentText())
+        self.selected_segment = self.get_object_from_array_by_name(self.segments, self.dlg.cmbBoxSegment.currentText())
         if len(self.selected_category) > 0 and len(self.selected_fuel) > 0 and len(self.selected_segment) > 0:
             filtred_euro_stds = emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0],segment=self.selected_segment[0])
             self.euro_stds = set(x.eurostd for x in filtred_euro_stds)
@@ -660,7 +660,7 @@ class RoadEmissionCalculator:
                                                                     self.dlg.cmbBoxVehicleType.currentText())
         self.selected_fuel = self.get_object_from_array_by_name(self.fuels, self.dlg.cmbBoxFuelType.currentText())
         self.selected_segment = self.get_object_from_array_by_name(self.segments,
-                                                                   self.dlg.cmbBoxSubsegment.currentText())
+                                                                   self.dlg.cmbBoxSegment.currentText())
         self.selected_euro_std = self.get_object_from_array_by_name(self.euro_stds, self.dlg.cmbBoxEuroStd.currentText())
         if len(self.selected_category) > 0 and len(self.selected_fuel) > 0 and len(self.selected_segment) > 0 and len(self.selected_euro_std) > 0:
             filtred_modes = emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0], segment=self.selected_segment[0],
@@ -676,7 +676,7 @@ class RoadEmissionCalculator:
                                                                     self.dlg.cmbBoxVehicleType.currentText())
         self.selected_fuel = self.get_object_from_array_by_name(self.fuels, self.dlg.cmbBoxFuelType.currentText())
         self.selected_segment = self.get_object_from_array_by_name(self.segments,
-                                                                   self.dlg.cmbBoxSubsegment.currentText())
+                                                                   self.dlg.cmbBoxSegment.currentText())
         self.selected_euro_std = self.get_object_from_array_by_name(self.euro_stds,
                                                                     self.dlg.cmbBoxEuroStd.currentText())
         self.selected_mode = self.get_object_from_array_by_name(self.modes, self.dlg.cmbBoxMode.currentText())
@@ -696,7 +696,77 @@ class RoadEmissionCalculator:
             x.setEnabled(False)
 
     def save_settings(self):
-        pass
+        print("Plugin directory: {}".format(os.path.dirname(__file__)))
+
+        settings = {
+            "startPoint": [self.dlg.lineEditStartX.text(), self.dlg.lineEditStartY.text()],
+            "endPoint": [self.dlg.lineEditEndX.text(), self.dlg.lineEditEndY.text()],
+            "load": self.dlg.cmbBoxLoad.currentText(),
+            "height": self.dlg.lineEditHeight.text(),
+            "length": self.dlg.lineEditLength.text(),
+            "vehicleType": self.dlg.cmbBoxVehicleType.currentText(),
+            "fuelType": self.dlg.cmbBoxFuelType.currentText(),
+            "segment": self.dlg.cmbBoxSegment.currentText(),
+            "euroStd": self.dlg.cmbBoxEuroStd.currentText(),
+            "mode": self.dlg.cmbBoxMode.currentText(),
+            "showResultInGraph": self.dlg.checkBoxShowInGraph.isChecked(),
+            "cumulativeCurve": self.dlg.checkBoxCumulative.isChecked(),
+            "nox": self.dlg.checkBoxNox.isChecked(),
+            "co": self.dlg.checkBoxCo.isChecked(),
+            "ec": self.dlg.checkBoxEc.isChecked(),
+            "voc": self.dlg.checkBoxVoc.isChecked(),
+            "ch4": self.dlg.checkBoxCh4.isChecked(),
+            "pm": self.dlg.checkBoxPmExhaust.isChecked()
+
+        }
+        plugin_path = os.path.dirname(__file__)
+        with open(plugin_path + "/settings.json", "w") as outfile:
+            json.dump(settings, outfile)
+
+    def load_settings(self):
+        settings_json_file = os.path.join(os.path.dirname(__file__), 'settings.json')
+        settings_data = {}
+        if os.path.isfile(settings_json_file):
+            # with gzip.open(gzip_json, "rb") as data_file:
+            #     data = json.loads(data_file.read().decode("ascii"))
+            # return data
+            settings_data = json.load(open(settings_json_file))
+
+            print ("load coordinates: {}".format(settings_data["startPoint"]))
+            self.dlg.lineEditStartX.setText(settings_data["startPoint"][0])
+            self.dlg.lineEditStartY.setText(settings_data["startPoint"][1])
+            self.dlg.lineEditEndX.setText(settings_data["endPoint"][0])
+            self.dlg.lineEditEndY.setText(settings_data["endPoint"][1])
+            load_index = self.dlg.cmbBoxLoad.findText(settings_data["load"], Qt.MatchFixedString)
+            if load_index >= 0:
+                self.dlg.cmbBoxLoad.setCurrentIndex(load_index)
+            self.dlg.lineEditHeight.setText(settings_data["height"])
+            self.dlg.lineEditLength.setText(settings_data["length"])
+            vehicle_type_index = self.dlg.cmbBoxVehicleType.findText(settings_data["vehicleType"], Qt.MatchFixedString)
+            if vehicle_type_index >= 0:
+                self.dlg.cmbBoxVehicleType.setCurrentIndex(vehicle_type_index)
+            fuel_type_index = self.dlg.cmbBoxFuelType.findText(settings_data["fuelType"], Qt.MatchFixedString)
+            if fuel_type_index >= 0:
+                self.dlg.cmbBoxFuelType.setCurrentIndex(fuel_type_index)
+            segment_index = self.dlg.cmbBoxSegment.findText(settings_data["segment"], Qt.MatchFixedString)
+            if segment_index >= 0:
+                self.dlg.cmbBoxSegment.setCurrentIndex(segment_index)
+            euro_std_index = self.dlg.cmbBoxEuroStd.findText(settings_data["euroStd"], Qt.MatchFixedString)
+            if euro_std_index >= 0:
+                self.dlg.cmbBoxEuroStd.setCurrentIndex(euro_std_index)
+            mode_index = self.dlg.cmbBoxMode.findText(settings_data["mode"], Qt.MatchFixedString)
+            if mode_index >= 0:
+                self.dlg.cmbBoxMode.setCurrentIndex(mode_index)
+            self.dlg.checkBoxShowInGraph.setChecked(settings_data["showResultInGraph"])
+            self.dlg.checkBoxCumulative.setChecked(settings_data["cumulativeCurve"])
+            self.dlg.checkBoxNox.setChecked(settings_data["nox"])
+            self.dlg.checkBoxCo.setChecked(settings_data["co"])
+            self.dlg.checkBoxEc.setChecked(settings_data["ec"])
+            self.dlg.checkBoxVoc.setChecked(settings_data["voc"])
+            self.dlg.checkBoxCh4.setChecked(settings_data["ch4"])
+            self.dlg.checkBoxPmExhaust.setChecked(settings_data["pm"])
+
+
 
 
     def get_object_from_array_by_name(self, array, name):
@@ -711,7 +781,7 @@ class RoadEmissionCalculator:
         # set input parameters to default when the dialog has been closed and open again
         self.dlg.cmbBoxVehicleType.clear()
         self.dlg.cmbBoxFuelType.clear()
-        self.dlg.cmbBoxSubsegment.clear()
+        self.dlg.cmbBoxSegment.clear()
         self.dlg.cmbBoxEuroStd.clear()
         self.dlg.cmbBoxMode.clear()
 
