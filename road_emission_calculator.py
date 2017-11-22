@@ -482,14 +482,24 @@ class RoadEmissionCalculator:
                         num_plots = 100 * active_graphs + 10 + grafIdx + 1
                         ax = fig.add_subplot(num_plots)
                         ax.set_title(pt)
-                        ax.set_ylim(0, max(max(x.pollutants[pt] for x in routes)) + 0.2)
+                        if self.dlg.checkBoxCumulative.isChecked():
+                            cumulative_route_pollutants = []
+                            for route in routes:
+                                cumulative_values = []
+                                cumulative_value = 0
+                                for plt_value in route.pollutants[pt]:
+                                    cumulative_value += plt_value
+                                    cumulative_values.append(cumulative_value)
+                                cumulative_route_pollutants.append(cumulative_values)
+                            ax.set_ylim(0, max(max(cumulative_route_pollutants)) + 0.2)
+                        else:
+                            ax.set_ylim(0, max(max(x.pollutants[pt] for x in routes)) + 0.2)
                         figs.append(ax)
                         grafIdx += 1
 
                 for r in routes:
                     grafIdx = 0
                     for pt in pollutant_types:
-
                         if self.pollutants_checkboxes[pt].isEnabled() and self.pollutants_checkboxes[pt].isChecked():
                             ax = figs[grafIdx]
                             if self.dlg.checkBoxCumulative.isChecked():
@@ -511,14 +521,6 @@ class RoadEmissionCalculator:
                 ax.legend(labels, loc=(0, pos), ncol=len(routes))
                 plt.show()
 
-
-        else:
-            # if "Fail" in self.emission_calculator.emission_summary:
-            #     self.dlg.textEditSummary.append(self.emission_calculator.emission_summary["Fail"])
-            #     self.dlg.textEditSummary.append("")
-            # # self.dlg.textEditSummary.append("Sorry, for defined parameters no road is available.")
-            # # self.dlg.textEditSummary.append("")
-            pass
 
     def select_route(self):
         if self.dlg.listWidget.currentItem():
