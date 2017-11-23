@@ -56,7 +56,6 @@ import resources
 from road_emission_calculator_dialog import RoadEmissionCalculatorDialog
 
 
-
 class RoadEmissionCalculator:
     """QGIS Plugin Implementation."""
 
@@ -146,7 +145,7 @@ class RoadEmissionCalculator:
         self.dlg.cmbBoxEuroStd.currentIndexChanged.connect(self.set_mode)
         self.dlg.cmbBoxMode.currentIndexChanged.connect(self.set_pollutants)
         self.dlg.listWidget.itemClicked.connect(self.select_route)
-        self.dlg.cmbBoxSortBy.currentIndexChanged.connect(self.sort_routes_by)
+        self.dlg.cmbBoxSortBy.currentIndexChanged.connect(self.sort_routes_by_selection)
 
         self.dlg.checkBoxShowInGraph.clicked.connect(self.activate_cumulative)
 
@@ -463,7 +462,7 @@ class RoadEmissionCalculator:
                 ## add layer to the registry and over the map canvas
                 QgsMapLayerRegistry.instance().addMapLayer(vl)
 
-            self.sort_routes_by()
+            self.sort_routes_by_selection()
 
             ## Show pollutant results in graph
             if self.dlg.checkBoxShowInGraph.isChecked():
@@ -567,26 +566,20 @@ class RoadEmissionCalculator:
         self.dlg.listWidget.clearSelection()
         self.selected_route_id = -1
 
-    def sort_routes_by(self):
+    def sort_routes_by_selection(self):
         # pass
         routes = self.planner.routes
-        print ("Sort by items count: {} and current name: {}".format(self.dlg.cmbBoxSortBy.count(), self.dlg.cmbBoxSortBy.currentText()))
         self.dlg.listWidget.clear()
         self.clear_selection()
         if len(routes) > 0 and self.dlg.cmbBoxSortBy.count() > 0:
-            print ("Current text: {}".format(self.dlg.cmbBoxSortBy.currentText()))
             if self.dlg.cmbBoxSortBy.currentText() == "Distance":
-                sorted_after_distance = sorted(routes, key=lambda x: x.distance)
-                for r in sorted_after_distance:
-                    self.add_route_item_to_list_widget(r)
+                sorted_by = sorted(routes, key=lambda x: x.distance)
             elif self.dlg.cmbBoxSortBy.currentText() == "Time":
-                routes.sort()
-                for r in routes:
-                    self.add_route_item_to_list_widget(r)
+                sorted_by = sorted(routes, key=lambda x: x.minutes)
             else:
-                sorted_after_pollutant = sorted(routes, key=lambda x: x.total_emission(self.dlg.cmbBoxSortBy.currentText()))
-                for r in sorted_after_pollutant:
-                    self.add_route_item_to_list_widget(r)
+                sorted_by = sorted(routes, key=lambda x: x.total_emission(self.dlg.cmbBoxSortBy.currentText()))
+            for r in sorted_by:
+                self.add_route_item_to_list_widget(r)
 
     def add_route_item_to_list_widget(self, route):
         pollutant_types = self.planner.pollutants.keys()
@@ -607,6 +600,12 @@ class RoadEmissionCalculator:
         myQListWidgetItem.setSizeHint(myQCustomQWidget.sizeHint())
         self.dlg.listWidget.addItem(myQListWidgetItem)
         self.dlg.listWidget.setItemWidget(myQListWidgetItem, myQCustomQWidget)
+        self.dlg.listWidget.setStyleSheet("""
+                                        QListWidget:item:selected:active {
+                                             background-color:rgb(230, 230, 230);
+                                        }
+                                        """
+                               )
 
     def set_categories(self):
         self.categories = emission.session.query(emission.models.Category).all()
