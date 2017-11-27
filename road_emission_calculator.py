@@ -95,7 +95,6 @@ class RoadEmissionCalculator:
         # Create the dialog (after translation) and keep reference
         self.dlg = RoadEmissionCalculatorDialog()
 
-
         # Declare instance attributes
         self.actions = []
         self.categories = []
@@ -146,6 +145,9 @@ class RoadEmissionCalculator:
         self.dlg.cmbBoxMode.currentIndexChanged.connect(self.set_pollutants)
         self.dlg.listWidget.itemClicked.connect(self.select_route)
         self.dlg.cmbBoxSortBy.currentIndexChanged.connect(self.sort_routes_by_selection)
+        self.dlg.cmbBoxLoad.currentIndexChanged.connect(self.set_planner_none)
+        self.dlg.lineEditHeight.textChanged.connect(self.set_planner_none)
+        self.dlg.lineEditLength.textChanged.connect(self.set_planner_none)
 
         self.dlg.checkBoxShowInGraph.clicked.connect(self.activate_cumulative)
 
@@ -290,11 +292,13 @@ class RoadEmissionCalculator:
 
     def add_start_point(self):
         # only one start point can be in canvas/legend
+        self.set_planner_none()
         self.remove_start_point()
         self.set_new_point("Start_point")
 
     def add_end_point(self):
         # only one end point can be in canvas/legend
+        self.set_planner_none()
         self.remove_end_point()
         self.set_new_point("End_point")
 
@@ -306,14 +310,19 @@ class RoadEmissionCalculator:
                 QgsMapLayerRegistry.instance().removeMapLayer(lrs.keys()[i])
 
     def remove_start_point(self):
+        self.set_planner_none()
         self.dlg.lineEditStartX.setText("")
         self.dlg.lineEditStartY.setText("")
         self.remove_layer("Start_point")
 
     def remove_end_point(self):
+        self.set_planner_none()
         self.dlg.lineEditEndX.setText("")
         self.dlg.lineEditEndY.setText("")
         self.remove_layer("End_point")
+
+    def set_planner_none(self):
+        self.planner = None
 
     'set new Layers to use the Project-CRS'
 
@@ -328,41 +337,44 @@ class RoadEmissionCalculator:
         self.s.setValue("/Projections/defaultBehaviour", self.oldValidation)
 
     def on_road_emission_planner_start(self):
-        self.dlg.widgetLoading.setShown(True)
-        start = [float(self.dlg.lineEditStartX.text()), float(self.dlg.lineEditStartY.text())]
-        stop = [float(self.dlg.lineEditEndX.text()), float(self.dlg.lineEditEndY.text())]
-        vehicle = emission.vehicles.Vehicle
+        if self.planner:
+            self.show_pollutants_in_graph()
+        else:
+            self.dlg.widgetLoading.setShown(True)
+            start = [float(self.dlg.lineEditStartX.text()), float(self.dlg.lineEditStartY.text())]
+            stop = [float(self.dlg.lineEditEndX.text()), float(self.dlg.lineEditEndY.text())]
+            vehicle = emission.vehicles.Vehicle
 
-        type_category = emission.vehicles.Vehicle.get_type_for_category(self.dlg.cmbBoxVehicleType.currentText())
-        if type_category == emission.vehicles.VehicleTypes.CAR:
-            vehicle = emission.vehicles.Car()
-        if type_category == emission.vehicles.VehicleTypes.BUS or type_category == emission.vehicles.VehicleTypes.TRUCK:
-            if type_category == emission.vehicles.VehicleTypes.BUS:
-                vehicle = emission.vehicles.Bus()
-            if type_category == emission.vehicles.VehicleTypes.TRUCK:
-                vehicle = emission.vehicles.Truck()
-            vehicle.length = self.dlg.lineEditLength.text()
-            vehicle.height = self.dlg.lineEditHeight.text()
-            vehicle.load = self.dlg.cmbBoxLoad.currentText()
-        if type_category == emission.vehicles.VehicleTypes.LCATEGORY:
-            vehicle = emission.vehicles.LCategory()
-        if type_category == emission.vehicles.VehicleTypes.VAN:
-            vehicle = emission.vehicles.Van()
+            type_category = emission.vehicles.Vehicle.get_type_for_category(self.dlg.cmbBoxVehicleType.currentText())
+            if type_category == emission.vehicles.VehicleTypes.CAR:
+                vehicle = emission.vehicles.Car()
+            if type_category == emission.vehicles.VehicleTypes.BUS or type_category == emission.vehicles.VehicleTypes.TRUCK:
+                if type_category == emission.vehicles.VehicleTypes.BUS:
+                    vehicle = emission.vehicles.Bus()
+                if type_category == emission.vehicles.VehicleTypes.TRUCK:
+                    vehicle = emission.vehicles.Truck()
+                vehicle.length = self.dlg.lineEditLength.text()
+                vehicle.height = self.dlg.lineEditHeight.text()
+                vehicle.load = self.dlg.cmbBoxLoad.currentText()
+            if type_category == emission.vehicles.VehicleTypes.LCATEGORY:
+                vehicle = emission.vehicles.LCategory()
+            if type_category == emission.vehicles.VehicleTypes.VAN:
+                vehicle = emission.vehicles.Van()
 
-        vehicle.fuel_type = self.dlg.cmbBoxFuelType.currentText()
-        vehicle.segment = self.dlg.cmbBoxSegment.currentText()
-        vehicle.euro_std = self.dlg.cmbBoxEuroStd.currentText()
-        vehicle.mode = self.dlg.cmbBoxMode.currentText()
+            vehicle.fuel_type = self.dlg.cmbBoxFuelType.currentText()
+            vehicle.segment = self.dlg.cmbBoxSegment.currentText()
+            vehicle.euro_std = self.dlg.cmbBoxEuroStd.currentText()
+            vehicle.mode = self.dlg.cmbBoxMode.currentText()
 
-        self.planner = emission.Planner(start, stop, vehicle)
+            self.planner = emission.Planner(start, stop, vehicle)
 
-        for x in self.pollutants_checkboxes:
-            if self.pollutants_checkboxes[x].isEnabled():
-                self.planner.add_pollutant(x)
+            for x in self.pollutants_checkboxes:
+                if self.pollutants_checkboxes[x].isEnabled():
+                    self.planner.add_pollutant(x)
 
-        self.overlay.show()
-        self.road_emission_planner_thread.set_planner(self.planner)
-        self.road_emission_planner_thread.start()
+            self.overlay.show()
+            self.road_emission_planner_thread.set_planner(self.planner)
+            self.road_emission_planner_thread.start()
 
     def on_road_emission_planner_finished(self):
         self.overlay.hide()
@@ -383,9 +395,13 @@ class RoadEmissionCalculator:
                 self.show_route_in_map(route,"Route", 2)
 
             self.sort_routes_by_selection()
+            self.show_pollutants_in_graph()
 
-            ## Show pollutant results in graph
-            if self.dlg.checkBoxShowInGraph.isChecked():
+    def show_pollutants_in_graph(self):
+        if self.planner:
+            routes = self.planner.routes
+            pollutant_types = self.planner.pollutants.keys()
+            if self.dlg.checkBoxShowInGraph.isChecked() and self.any_pollutant_checked(pollutant_types):
                 fig = plt.figure()
                 figs = []
 
@@ -438,6 +454,12 @@ class RoadEmissionCalculator:
                 ax.legend(labels, loc=(0, pos), ncol=len(routes))
                 plt.show()
 
+    def any_pollutant_checked(self, pollutant_types):
+        for pt in pollutant_types:
+            if self.pollutants_checkboxes[pt].isChecked():
+                return True
+        return False
+
     def select_route(self):
         if self.dlg.listWidget.currentItem():
             route_item = self.dlg.listWidget.itemWidget(self.dlg.listWidget.currentItem())
@@ -462,7 +484,6 @@ class RoadEmissionCalculator:
         line_points = []
 
         for i in range(len(route.path)):
-            # if j == 0:
             if (i + 1) < len(route.path):
                 line_points.append(QgsPoint(route.path[i][0], route.path[i][1]))
         # set the geometry defined from the point X: 50, Y: 100
@@ -487,7 +508,6 @@ class RoadEmissionCalculator:
         self.selected_route_id = -1
 
     def sort_routes_by_selection(self):
-        # pass
         routes = self.planner.routes
         self.dlg.listWidget.clear()
         self.clear_selection()
@@ -637,6 +657,10 @@ class RoadEmissionCalculator:
         for x in self.pollutants_checkboxes.values():
             x.setEnabled(False)
 
+    def uncheck_all_pollutants(self):
+        for x in self.pollutants_checkboxes.values():
+            x.setChecked(False)
+
     def save_settings(self):
         settings = {
             "startPoint": [self.dlg.lineEditStartX.text(), self.dlg.lineEditStartY.text()],
@@ -718,11 +742,6 @@ class RoadEmissionCalculator:
         self.dlg.cmbBoxMode.clear()
 
         self.set_categories()
-        self.set_fuels()
-        self.set_segments()
-        self.set_euro_std()
-        self.set_mode()
-        self.set_pollutants()
 
         self.dlg.cmbBoxLoad.clear()
         self.dlg.cmbBoxLoad.addItems(["0", "50", "100"])
@@ -730,45 +749,10 @@ class RoadEmissionCalculator:
         self.dlg.lineEditStartY.setText("")
         self.dlg.lineEditEndX.setText("")
         self.dlg.lineEditEndY.setText("")
-        # self.dlg.textEditSummary.clear()
-
-        # Create QCustomQWidget
-        # self.myQCustomQWidget = TheWidgetItem()
-
-        # Create QListWidgetItem
-        # myQCustomQWidget = TheWidgetItem()
-        # myQCustomQWidget.set_route_name("Route1")
-        # myQCustomQWidget.set_distance_time("35 km", "0 hours 20 minutes")
-        # myQListWidgetItem = QListWidgetItem(self.dlg.listWidget)
-        # myQListWidgetItem.setSizeHint(myQCustomQWidget.sizeHint())
-        # self.dlg.listWidget.addItem(myQListWidgetItem)
-        # self.dlg.listWidget.setItemWidget(myQListWidgetItem, myQCustomQWidget)
-        #
-        # myQCustomQWidget = TheWidgetItem()
-        # myQCustomQWidget.set_route_name("Route2")
-        # myQCustomQWidget.set_distance_time("45 km", "0 hours 49 minutes")
-        # myQListWidgetItem = QListWidgetItem(self.dlg.listWidget)
-        # myQListWidgetItem.setSizeHint(myQCustomQWidget.sizeHint())
-        # self.dlg.listWidget.addItem(myQListWidgetItem)
-        # self.dlg.listWidget.setItemWidget(myQListWidgetItem, myQCustomQWidget)
-
-
-        # for index, name, icon in [
-        #     ('No.1', 'Meyoko', 'icon.png'),
-        #     ('No.2', 'Nyaruko', 'icon.png'),
-        #     ('No.3', 'Louise', 'icon.png')]:
-        #     # Create QCustomQWidget
-        #     myQCustomQWidget = TheWidgetItem()
-        #     myQCustomQWidget.setTextUp(index)
-        #     myQCustomQWidget.setTextDown(name)
-        #     myQCustomQWidget.setIcon(icon)
-        #     # Create QListWidgetItem
-        #     myQListWidgetItem = QListWidgetItem(self.dlg.listWidget)
-        #     # Set size hint
-        #     myQListWidgetItem.setSizeHint(myQCustomQWidget.sizeHint())
-        #     # Add QListWidgetItem into QListWidget
-        #     self.dlg.listWidget.addItem(myQListWidgetItem)
-        #     self.dlg.listWidget.setItemWidget(myQListWidgetItem, myQCustomQWidget)
+        self.dlg.listWidget.clear()
+        self.dlg.checkBoxShowInGraph.setChecked(False)
+        self.dlg.checkBoxCumulative.setChecked(False)
+        self.uncheck_all_pollutants()
 
 
         # show the dialog
@@ -782,4 +766,3 @@ class RoadEmissionCalculator:
             self.canvas.unsetMapTool(self.mapTool)
         else:
             self.dlg.widgetLoading.setShown(False)
-            # pass
