@@ -340,7 +340,9 @@ class RoadEmissionCalculator:
         if self.planner:
             self.show_pollutants_in_graph()
         else:
-            self.dlg.widgetLoading.setShown(True)
+            if (self.dlg.lineEditStartX.text() == "" or self.dlg.lineEditStartY.text() == "" or
+                    self.dlg.lineEditEndX.text() == "" or self.dlg.lineEditEndY.text() == ""):
+                return
             start = [float(self.dlg.lineEditStartX.text()), float(self.dlg.lineEditStartY.text())]
             stop = [float(self.dlg.lineEditEndX.text()), float(self.dlg.lineEditEndY.text())]
             vehicle = emission.vehicles.Vehicle
@@ -372,6 +374,7 @@ class RoadEmissionCalculator:
                 if self.pollutants_checkboxes[x].isEnabled():
                     self.planner.add_pollutant(x)
 
+            self.dlg.widgetLoading.setShown(True)
             self.overlay.show()
             self.road_emission_planner_thread.set_planner(self.planner)
             self.road_emission_planner_thread.start()
