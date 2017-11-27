@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>794</width>
-    <height>458</height>
+    <height>496</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
    <property name="geometry">
     <rect>
      <x>610</x>
-     <y>420</y>
+     <y>460</y>
      <width>171</width>
      <height>32</height>
     </rect>
@@ -41,7 +41,7 @@
      <x>410</x>
      <y>0</y>
      <width>371</width>
-     <height>421</height>
+     <height>451</height>
     </rect>
    </property>
    <property name="title">
@@ -53,7 +53,7 @@
       <x>10</x>
       <y>60</y>
       <width>351</width>
-      <height>341</height>
+      <height>381</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -62,28 +62,27 @@
 </string>
     </property>
    </widget>
-   <widget class="QComboBox" name="cmbBoxSortBy">
-    <property name="geometry">
-     <rect>
-      <x>70</x>
-      <y>30</y>
-      <width>104</width>
-      <height>26</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_12">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>30</y>
-      <width>60</width>
-      <height>16</height>
+      <y>20</y>
+      <width>181</width>
+      <height>41</height>
      </rect>
     </property>
-    <property name="text">
-     <string>Sort by:</string>
-    </property>
+    <layout class="QGridLayout" name="gridLayout_6">
+     <item row="0" column="1">
+      <widget class="QComboBox" name="cmbBoxSortBy"/>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_12">
+       <property name="text">
+        <string>Sort by:</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QWidget" name="widgetLoading" native="true">
@@ -95,13 +94,13 @@
      <x>5</x>
      <y>5</y>
      <width>785</width>
-     <height>445</height>
+     <height>485</height>
     </rect>
    </property>
    <property name="minimumSize">
     <size>
      <width>785</width>
-     <height>445</height>
+     <height>485</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -115,130 +114,100 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>320</y>
+     <y>330</y>
      <width>391</width>
-     <height>101</height>
+     <height>121</height>
     </rect>
    </property>
    <property name="title">
     <string>Show results in graph</string>
    </property>
-   <widget class="QCheckBox" name="checkBoxShowInGraph">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>30</y>
-      <width>157</width>
-      <height>20</height>
+      <y>20</y>
+      <width>371</width>
+      <height>31</height>
      </rect>
     </property>
-    <property name="text">
-     <string>Show results in graph</string>
-    </property>
+    <layout class="QGridLayout" name="gridLayout_4">
+     <item row="0" column="1">
+      <widget class="QCheckBox" name="checkBoxCumulative">
+       <property name="text">
+        <string>Cumulative curve</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QCheckBox" name="checkBoxShowInGraph">
+       <property name="text">
+        <string>Show results in graph</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
-   <widget class="QCheckBox" name="checkBoxCumulative">
-    <property name="geometry">
-     <rect>
-      <x>180</x>
-      <y>30</y>
-      <width>131</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Cumulative curve</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_3">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>60</y>
-      <width>65</width>
-      <height>16</height>
+      <width>371</width>
+      <height>61</height>
      </rect>
     </property>
-    <property name="text">
-     <string>Pollutants:</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="checkBoxNox">
-    <property name="geometry">
-     <rect>
-      <x>90</x>
-      <y>60</y>
-      <width>52</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>NOx</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="checkBoxVoc">
-    <property name="geometry">
-     <rect>
-      <x>180</x>
-      <y>80</y>
-      <width>51</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>VOC</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="checkBoxCo">
-    <property name="geometry">
-     <rect>
-      <x>90</x>
-      <y>80</y>
-      <width>45</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>CO</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="checkBoxEc">
-    <property name="geometry">
-     <rect>
-      <x>180</x>
-      <y>60</y>
-      <width>45</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>EC</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="checkBoxCh4">
-    <property name="geometry">
-     <rect>
-      <x>270</x>
-      <y>60</y>
-      <width>87</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>CH4</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="checkBoxPmExhaust">
-    <property name="geometry">
-     <rect>
-      <x>270</x>
-      <y>80</y>
-      <width>91</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>PM Exhaust</string>
-    </property>
+    <layout class="QGridLayout" name="gridLayout_5">
+     <item row="0" column="1">
+      <widget class="QCheckBox" name="checkBoxNox">
+       <property name="text">
+        <string>NOx</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QCheckBox" name="checkBoxPmExhaust">
+       <property name="text">
+        <string>PM Exhaust</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QCheckBox" name="checkBoxEc">
+       <property name="text">
+        <string>EC</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Pollutants:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QCheckBox" name="checkBoxCh4">
+       <property name="text">
+        <string>CH4</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QCheckBox" name="checkBoxVoc">
+       <property name="text">
+        <string>VOC</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QCheckBox" name="checkBoxCo">
+       <property name="text">
+        <string>CO</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QGroupBox" name="groupBoxCalculator">
@@ -247,519 +216,323 @@
      <x>10</x>
      <y>0</y>
      <width>391</width>
-     <height>321</height>
+     <height>151</height>
     </rect>
    </property>
    <property name="title">
-    <string>Emission Calculator</string>
+    <string>Route paramters</string>
    </property>
-   <widget class="QLabel" name="label_7">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>163</y>
-      <width>75</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Vehicle type</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="cmbBoxVehicleType">
-    <property name="geometry">
-     <rect>
-      <x>120</x>
-      <y>161</y>
-      <width>104</width>
-      <height>26</height>
-     </rect>
-    </property>
-    <property name="editable">
-     <bool>false</bool>
-    </property>
-    <property name="sizeAdjustPolicy">
-     <enum>QComboBox::AdjustToContents</enum>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_8">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>193</y>
-      <width>56</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Fuel type</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="cmbBoxFuelType">
-    <property name="geometry">
-     <rect>
-      <x>120</x>
-      <y>191</y>
-      <width>104</width>
-      <height>26</height>
-     </rect>
-    </property>
-    <property name="sizeAdjustPolicy">
-     <enum>QComboBox::AdjustToContents</enum>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_9">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>223</y>
-      <width>81</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Segment</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="cmbBoxSegment">
-    <property name="geometry">
-     <rect>
-      <x>120</x>
-      <y>221</y>
-      <width>201</width>
-      <height>26</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_10">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>253</y>
-      <width>91</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Euro Standard:</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="cmbBoxEuroStd">
-    <property name="geometry">
-     <rect>
-      <x>120</x>
-      <y>251</y>
-      <width>201</width>
-      <height>26</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_5">
-    <property name="geometry">
-     <rect>
-      <x>255</x>
-      <y>110</y>
-      <width>47</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Length:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_2">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>11</x>
-      <y>41</y>
-      <width>68</width>
-      <height>16</height>
+      <y>30</y>
+      <width>371</width>
+      <height>68</height>
      </rect>
     </property>
-    <property name="text">
-     <string>Start Point:</string>
-    </property>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="lineEditEndX">
+       <property name="minimumSize">
+        <size>
+         <width>85</width>
+         <height>21</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>85</width>
+         <height>21</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLineEdit{border: 1px solid lightgrey; border-radius:5px; }</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLineEdit" name="lineEditStartY">
+       <property name="minimumSize">
+        <size>
+         <width>85</width>
+         <height>21</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>85</width>
+         <height>21</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLineEdit{border: 1px solid lightgrey; border-radius:5px; }</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLineEdit" name="lineEditEndY">
+       <property name="minimumSize">
+        <size>
+         <width>85</width>
+         <height>21</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>85</width>
+         <height>21</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLineEdit{border: 1px solid lightgrey; border-radius:5px; }</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="lineEditStartX">
+       <property name="minimumSize">
+        <size>
+         <width>85</width>
+         <height>21</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>85</width>
+         <height>21</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLineEdit{border: 1px solid lightgrey; border-radius:5px; }</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="4">
+      <widget class="QPushButton" name="btnRemoveStartPoint">
+       <property name="minimumSize">
+        <size>
+         <width>50</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>50</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>images/trash_64.png</normaloff>images/trash_64.png</iconset>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="4">
+      <widget class="QPushButton" name="btnRemoveEndPoint">
+       <property name="minimumSize">
+        <size>
+         <width>50</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>50</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>images/trash_64.png</normaloff>images/trash_64.png</iconset>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QPushButton" name="btnAddEndPoint">
+       <property name="minimumSize">
+        <size>
+         <width>50</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>50</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>images/pencil_64.png</normaloff>images/pencil_64.png</iconset>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QPushButton" name="btnAddStartPoint">
+       <property name="minimumSize">
+        <size>
+         <width>50</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>50</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>images/pencil_64.png</normaloff>images/pencil_64.png</iconset>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>End Point:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Start Point:</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
-   <widget class="QLabel" name="label_11">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>11</x>
-      <y>110</y>
-      <width>40</width>
-      <height>16</height>
+      <y>96</y>
+      <width>371</width>
+      <height>41</height>
      </rect>
     </property>
-    <property name="minimumSize">
-     <size>
-      <width>40</width>
-      <height>0</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>40</width>
-      <height>16777215</height>
-     </size>
-    </property>
-    <property name="text">
-     <string>Load:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEditEndX">
-    <property name="geometry">
-     <rect>
-      <x>87</x>
-      <y>73</y>
-      <width>85</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>85</width>
-      <height>21</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>85</width>
-      <height>21</height>
-     </size>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QLineEdit{border: 1px solid lightgrey; border-radius:5px; }</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btnAddEndPoint">
-    <property name="geometry">
-     <rect>
-      <x>269</x>
-      <y>69</y>
-      <width>50</width>
-      <height>32</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>50</width>
-      <height>32</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>50</width>
-      <height>32</height>
-     </size>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="icon">
-     <iconset>
-      <normaloff>images/pencil_64.png</normaloff>images/pencil_64.png</iconset>
-    </property>
-    <property name="autoDefault">
-     <bool>false</bool>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="cmbBoxLoad">
-    <property name="geometry">
-     <rect>
-      <x>56</x>
-      <y>108</y>
-      <width>80</width>
-      <height>26</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>80</width>
-      <height>26</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>80</width>
-      <height>26</height>
-     </size>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEditHeight">
-    <property name="geometry">
-     <rect>
-      <x>195</x>
-      <y>110</y>
-      <width>50</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>50</width>
-      <height>21</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>50</width>
-      <height>21</height>
-     </size>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QLineEdit{border: 1px solid lightgrey; border-radius:5px; }</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEditStartY">
-    <property name="geometry">
-     <rect>
-      <x>182</x>
-      <y>41</y>
-      <width>85</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>85</width>
-      <height>21</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>85</width>
-      <height>21</height>
-     </size>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QLineEdit{border: 1px solid lightgrey; border-radius:5px; }</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_4">
-    <property name="geometry">
-     <rect>
-      <x>11</x>
-      <y>73</y>
-      <width>62</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>End Point:</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btnAddStartPoint">
-    <property name="geometry">
-     <rect>
-      <x>269</x>
-      <y>37</y>
-      <width>50</width>
-      <height>32</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>50</width>
-      <height>32</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>50</width>
-      <height>32</height>
-     </size>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="icon">
-     <iconset>
-      <normaloff>images/pencil_64.png</normaloff>images/pencil_64.png</iconset>
-    </property>
-    <property name="autoDefault">
-     <bool>false</bool>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>143</x>
-      <y>110</y>
-      <width>44</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Height:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEditEndY">
-    <property name="geometry">
-     <rect>
-      <x>182</x>
-      <y>73</y>
-      <width>85</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>85</width>
-      <height>21</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>85</width>
-      <height>21</height>
-     </size>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QLineEdit{border: 1px solid lightgrey; border-radius:5px; }</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btnRemoveEndPoint">
-    <property name="geometry">
-     <rect>
-      <x>321</x>
-      <y>69</y>
-      <width>50</width>
-      <height>32</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>50</width>
-      <height>32</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>50</width>
-      <height>32</height>
-     </size>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="icon">
-     <iconset>
-      <normaloff>images/trash_64.png</normaloff>images/trash_64.png</iconset>
-    </property>
-    <property name="autoDefault">
-     <bool>false</bool>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEditStartX">
-    <property name="geometry">
-     <rect>
-      <x>87</x>
-      <y>41</y>
-      <width>85</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>85</width>
-      <height>21</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>85</width>
-      <height>21</height>
-     </size>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QLineEdit{border: 1px solid lightgrey; border-radius:5px; }</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEditLength">
-    <property name="geometry">
-     <rect>
-      <x>310</x>
-      <y>110</y>
-      <width>50</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>50</width>
-      <height>21</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>50</width>
-      <height>21</height>
-     </size>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QLineEdit{border: 1px solid lightgrey; border-radius:5px; }</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btnRemoveStartPoint">
-    <property name="geometry">
-     <rect>
-      <x>321</x>
-      <y>37</y>
-      <width>50</width>
-      <height>32</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>50</width>
-      <height>32</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>50</width>
-      <height>32</height>
-     </size>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="icon">
-     <iconset>
-      <normaloff>images/trash_64.png</normaloff>images/trash_64.png</iconset>
-    </property>
-    <property name="autoDefault">
-     <bool>false</bool>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_6">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>290</y>
-      <width>60</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Mode:</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="cmbBoxMode">
-    <property name="geometry">
-     <rect>
-      <x>120</x>
-      <y>280</y>
-      <width>201</width>
-      <height>26</height>
-     </rect>
-    </property>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="1">
+      <widget class="QComboBox" name="cmbBoxLoad">
+       <property name="minimumSize">
+        <size>
+         <width>80</width>
+         <height>26</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>80</width>
+         <height>26</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="4">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Length:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QLineEdit" name="lineEditHeight">
+       <property name="minimumSize">
+        <size>
+         <width>50</width>
+         <height>21</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>50</width>
+         <height>21</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLineEdit{border: 1px solid lightgrey; border-radius:5px; }</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_11">
+       <property name="minimumSize">
+        <size>
+         <width>40</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>40</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Load:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Height:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="5">
+      <widget class="QLineEdit" name="lineEditLength">
+       <property name="minimumSize">
+        <size>
+         <width>50</width>
+         <height>21</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>50</width>
+         <height>21</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLineEdit{border: 1px solid lightgrey; border-radius:5px; }</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QPushButton" name="btnGetEmissions">
    <property name="geometry">
     <rect>
      <x>410</x>
-     <y>420</y>
+     <y>460</y>
      <width>191</width>
      <height>32</height>
     </rect>
@@ -778,7 +551,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>420</y>
+     <y>460</y>
      <width>113</width>
      <height>32</height>
     </rect>
@@ -794,7 +567,7 @@
    <property name="geometry">
     <rect>
      <x>120</x>
-     <y>420</y>
+     <y>460</y>
      <width>113</width>
      <height>32</height>
     </rect>
@@ -806,6 +579,92 @@
     <bool>false</bool>
    </property>
   </widget>
+  <widget class="QGroupBox" name="groupBox_3">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>150</y>
+     <width>391</width>
+     <height>181</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Set vehicle type</string>
+   </property>
+   <widget class="QWidget" name="layoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>371</width>
+      <height>146</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_3">
+     <item row="2" column="1">
+      <widget class="QComboBox" name="cmbBoxSegment"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_10">
+       <property name="text">
+        <string>Euro Standard:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Mode:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QComboBox" name="cmbBoxMode"/>
+     </item>
+     <item row="3" column="1">
+      <widget class="QComboBox" name="cmbBoxEuroStd"/>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="cmbBoxFuelType">
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToContents</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QComboBox" name="cmbBoxVehicleType">
+       <property name="editable">
+        <bool>false</bool>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToContents</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>Vehicle type</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_9">
+       <property name="text">
+        <string>Segment</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>Fuel type</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <zorder>widgetLoading</zorder>
   <zorder>button_box</zorder>
   <zorder>groupBox_2</zorder>
@@ -814,6 +673,7 @@
   <zorder>btnGetEmissions</zorder>
   <zorder>btnSaveSettings</zorder>
   <zorder>btnLoadSettings</zorder>
+  <zorder>groupBox_3</zorder>
  </widget>
  <resources/>
  <connections>

@@ -12,7 +12,7 @@ class RoadEmissionPlannerThread(QThread):
         self.emission_planner = planner
 
     def _run_planner(self):
-        self.emission_planner.run()
+        self.emission_planner._get_routes()
 
     def run(self):
         self._run_planner()

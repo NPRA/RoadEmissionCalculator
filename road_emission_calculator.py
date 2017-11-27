@@ -72,7 +72,7 @@ class RoadEmissionCalculator:
         self.canvas = iface.mapCanvas()
         self.crossRb = QgsRubberBand(self.canvas, QGis.Line)
         self.crossRb.setColor(Qt.red)
-        self.planner = emission
+        self.planner = None
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
@@ -132,11 +132,11 @@ class RoadEmissionCalculator:
 
         self.dlg.widgetLoading.setShown(False)
         self.overlay = Overlay(self.dlg.widgetLoading)
-        self.overlay.resize(700,445)
+        self.overlay.resize(785,455)
         self.overlay.hide()
 
-        self.roadEmissionPlanner = RoadEmissionPlannerThread()
-        self.roadEmissionPlanner.plannerFinished.connect(self.on_road_emission_planner_finished)
+        self.road_emission_planner_thread = RoadEmissionPlannerThread()
+        self.road_emission_planner_thread.plannerFinished.connect(self.on_road_emission_planner_finished)
 
         self.dlg.btnGetEmissions.clicked.connect(self.on_road_emission_planner_start)
         self.dlg.cmbBoxVehicleType.currentIndexChanged.connect(self.set_fuels)
@@ -170,7 +170,6 @@ class RoadEmissionCalculator:
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('RoadEmissionCalculator', message)
-
 
     def add_action(
         self,
@@ -282,19 +281,6 @@ class RoadEmissionCalculator:
         del self.toolbar
         self.canvas.unsetMapTool(self.mapTool)
 
-    # def set_vehicle_subsegment(self):
-    #     self.dlg.cmbBoxSubsegment.clear()
-    #     if self.dlg.cmbBoxVehicleType.currentText() == 'CAR':
-    #         segments = emission.vehicles.Car.type
-    #         self.dlg.cmbBoxSubsegment.addItems([list(d)[0] for d in segments])
-
-    # def set_vehicle_euro_std(self):
-    #
-    #     self.dlg.cmbBoxEuroStd.clear()
-    #     if self.dlg.cmbBoxVehicleType.currentText() == 'CAR':
-    #         segments = emission.vehicles.Car.type
-    #         self.dlg.cmbBoxEuroStd.addItems(list(filter(lambda y: y != None, [x.get(self.dlg.cmbBoxSubsegment.currentText()) for x in segments]))[0])
-
     def activate_cumulative(self):
         self.dlg.checkBoxCumulative.setEnabled(self.dlg.checkBoxShowInGraph.isChecked())
 
@@ -375,8 +361,8 @@ class RoadEmissionCalculator:
                 self.planner.add_pollutant(x)
 
         self.overlay.show()
-        self.roadEmissionPlanner.set_planner(self.planner)
-        self.roadEmissionPlanner.start()
+        self.road_emission_planner_thread.set_planner(self.planner)
+        self.road_emission_planner_thread.start()
 
     def on_road_emission_planner_finished(self):
         self.overlay.hide()
@@ -385,82 +371,16 @@ class RoadEmissionCalculator:
         self.dlg.widgetLoading.setShown(False)
 
     def road_emission_planner_finished(self):
-        # self.dlg.textEditSummary.clear()
+        self.planner._calculate_emissions()
         self.dlg.cmbBoxSortBy.clear()
-        # self.dlg.listWidget.clear()
         routes = self.planner.routes
         pollutant_types = self.planner.pollutants.keys()
         if len(routes) > 0:
             self.dlg.cmbBoxSortBy.addItem("Distance")
             self.dlg.cmbBoxSortBy.addItem("Time")
             self.dlg.cmbBoxSortBy.addItems(pollutant_types)
-            # self.dlg.cmbBoxSortBy.append
-            # self.sort_routes_by()
             for route in routes:
-                # self.dlg.textEditSummary.append("Route" + str(idx + 1) + ":")
-
-                # self.dlg.textEditSummary.append(
-                #     "Length: " + str(distance) + " km, driving time: " + str(hours) + " hours and " + str(
-                #         minutes) + " minutes.")
-                # self.dlg.textEditSummary.append("")
-                # for pt in pollutant_types:
-                #     self.dlg.textEditSummary.append(("    {} = {}".format(pt, route.total_emission(pt))))
-                #
-                # self.dlg.textEditSummary.append("")
-                # self.dlg.textEditSummary.append("")
-
-                # distance = route.distance / 1000
-                # hours, minutes = divmod(route.minutes, 60)
-                # hours = int(hours)
-                # minutes = int(minutes)
-                #
-                # myQCustomQWidget = TheWidgetItem()
-                # myQCustomQWidget.set_route_name("Route" + str(idx + 1))
-                # myQCustomQWidget.set_distance_time(str(distance) + " km", str(hours) + " hours and " + str(
-                #         minutes) + " minutes.")
-                # myQCustomQWidget.hide_all_lbl_pollutants()
-                # for idxPlt, pt in enumerate(pollutant_types):
-                #     myQCustomQWidget.set_pollutants(idxPlt, pt, round(route.total_emission(pt),2))
-                # myQListWidgetItem = QListWidgetItem(self.dlg.listWidget)
-                # myQListWidgetItem.setSizeHint(myQCustomQWidget.sizeHint())
-                # self.dlg.listWidget.addItem(myQListWidgetItem)
-                # self.dlg.listWidget.setItemWidget(myQListWidgetItem, myQCustomQWidget)
-
-
-                ## create an empty memory layer
-                vl = QgsVectorLayer("LineString", "Route" + str(route.id + 1), "memory")
-                ## define and add a field ID to memory layer "Route"
-                provider = vl.dataProvider()
-                provider.addAttributes([QgsField("ID", QVariant.Int)])
-                ## create a new feature for the layer "Route"
-                ft = QgsFeature()
-                ## set the value 1 to the new field "ID"
-                ft.setAttributes([1])
-                line_points = []
-                for i in range(len(route.path)):
-                    # if j == 0:
-                    if (i + 1) < len(route.path):
-                        line_points.append(QgsPoint(route.path[i][0], route.path[i][1]))
-                ## set the geometry defined from the point X: 50, Y: 100
-                ft.setGeometry(QgsGeometry.fromPolyline(line_points))
-                ## finally insert the feature
-                provider.addFeatures([ft])
-
-                ## set color
-                symbols = vl.rendererV2().symbols()
-                sym = symbols[0]
-                # if idx < (len(self.color_list) - 1):
-                # print ("Route id: {}".format(route.id))
-                # print ("Route color: {}".format(self.color_list[route.id]))
-                # print ("Route color: {}".format(self.color_list[route.id]))
-
-                color = self.color_list[route.id]
-                # print ("Color: {}.{}.{}".format(color[0], color[1], color[2]))
-                sym.setColor(QColor.fromRgb(color[0], color[1], color[2]))
-                sym.setWidth(2)
-
-                ## add layer to the registry and over the map canvas
-                QgsMapLayerRegistry.instance().addMapLayer(vl)
+                self.show_route_in_map(route,"Route", 2)
 
             self.sort_routes_by_selection()
 
@@ -512,14 +432,11 @@ class RoadEmissionCalculator:
                                 ax.plot(r.distances[0], r.pollutants[pt])
                             grafIdx += 1
 
-                # print("Fig length: {}".format(len(figs)))
-
                 ax = figs[-1]
                 labels = ["Route " + str(i + 1) for i in range(len(routes))]
                 pos = (len(figs) / 10.0) * (-1)
                 ax.legend(labels, loc=(0, pos), ncol=len(routes))
                 plt.show()
-
 
     def select_route(self):
         if self.dlg.listWidget.currentItem():
@@ -530,36 +447,39 @@ class RoadEmissionCalculator:
             self.remove_layer("Selected")
             self.selected_route_id = route_item.route_id
             route = self.planner.routes[route_item.route_id]
-            ## create an empty memory layer
-            vl = QgsVectorLayer("LineString", "Selected route" + str(route.id + 1), "memory")
-            ## define and add a field ID to memory layer "Route"
-            provider = vl.dataProvider()
-            provider.addAttributes([QgsField("ID", QVariant.Int)])
-            ## create a new feature for the layer "Route"
-            ft = QgsFeature()
-            ## set the value 1 to the new field "ID"
-            ft.setAttributes([1])
-            line_points = []
+            self.show_route_in_map(route, "Selected route", 4)
 
-            for i in range(len(route.path)):
-                # if j == 0:
-                if (i + 1) < len(route.path):
-                    line_points.append(QgsPoint(route.path[i][0], route.path[i][1]))
-            ## set the geometry defined from the point X: 50, Y: 100
-            ft.setGeometry(QgsGeometry.fromPolyline(line_points))
-            ## finally insert the feature
-            provider.addFeatures([ft])
+    def show_route_in_map(self, route, route_name, style_width):
+        # create an empty memory layer
+        vl = QgsVectorLayer("LineString", route_name + str(route.id + 1), "memory")
+        # define and add a field ID to memory layer "Route"
+        provider = vl.dataProvider()
+        provider.addAttributes([QgsField("ID", QVariant.Int)])
+        # create a new feature for the layer "Route"
+        ft = QgsFeature()
+        # set the value 1 to the new field "ID"
+        ft.setAttributes([1])
+        line_points = []
 
-            ## set color
-            symbols = vl.rendererV2().symbols()
-            sym = symbols[0]
-            # if selected_idx < (len(self.color_list) - 1):
-            color = self.color_list[route.id]
-            sym.setColor(QColor.fromRgb(color[0], color[1], color[2]))
-            sym.setWidth(4)
+        for i in range(len(route.path)):
+            # if j == 0:
+            if (i + 1) < len(route.path):
+                line_points.append(QgsPoint(route.path[i][0], route.path[i][1]))
+        # set the geometry defined from the point X: 50, Y: 100
+        ft.setGeometry(QgsGeometry.fromPolyline(line_points))
+        # finally insert the feature
+        provider.addFeatures([ft])
 
-            ## add layer to the registry and over the map canvas
-            QgsMapLayerRegistry.instance().addMapLayer(vl)
+        # set color
+        symbols = vl.rendererV2().symbols()
+        sym = symbols[0]
+        color = self.color_list[route.id]
+        sym.setColor(QColor.fromRgb(color[0], color[1], color[2]))
+        # set width
+        sym.setWidth(style_width)
+
+        # add layer to the registry and over the map canvas
+        QgsMapLayerRegistry.instance().addMapLayer(vl)
 
     def clear_selection(self):
         self.remove_layer("Selected")
@@ -604,11 +524,10 @@ class RoadEmissionCalculator:
                                         QListWidget:item:selected:active {
                                              background-color:rgb(230, 230, 230);
                                         }
-                                        """
-                               )
+                                        """)
 
     def set_categories(self):
-        self.categories = emission.session.query(emission.models.Category).all()
+        self.categories = list(emission.session.query(emission.models.Category).all())
         list_categories = list(map(lambda category: category.name, self.categories))
         list_categories.sort()
         self.dlg.cmbBoxVehicleType.addItems(list_categories)
@@ -620,7 +539,7 @@ class RoadEmissionCalculator:
         self.selected_category = self.get_object_from_array_by_name(self.categories,
                                                                     self.dlg.cmbBoxVehicleType.currentText())
         if len(self.selected_category) > 0:
-            filtred_fuels = emission.models.filter_parms(cat=self.selected_category[0])
+            filtred_fuels = list(emission.models.filter_parms(cat=self.selected_category[0]))
             self.fuels = set(x.fuel for x in filtred_fuels)
             list_fuels = list(map(lambda fuel: fuel.name, self.fuels))
             list_fuels.sort()
@@ -632,7 +551,7 @@ class RoadEmissionCalculator:
                                                                     self.dlg.cmbBoxVehicleType.currentText())
         self.selected_fuel = self.get_object_from_array_by_name(self.fuels, self.dlg.cmbBoxFuelType.currentText())
         if len(self.selected_category) > 0 and len(self.selected_fuel) > 0:
-            filtred_segments = emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0])
+            filtred_segments = list(emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0]))
             self.segments = set(x.segment for x in filtred_segments)
             list_segments = list(map(lambda segment: str(segment.name), self.segments))
             list_segments.sort()
@@ -647,7 +566,7 @@ class RoadEmissionCalculator:
         self.selected_fuel = self.get_object_from_array_by_name(self.fuels, self.dlg.cmbBoxFuelType.currentText())
         self.selected_segment = self.get_object_from_array_by_name(self.segments, self.dlg.cmbBoxSegment.currentText())
         if len(self.selected_category) > 0 and len(self.selected_fuel) > 0 and len(self.selected_segment) > 0:
-            filtred_euro_stds = emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0],segment=self.selected_segment[0])
+            filtred_euro_stds = list(emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0],segment=self.selected_segment[0]))
             self.euro_stds = set(x.eurostd for x in filtred_euro_stds)
             list_euro_stds = list(map(lambda eurostd: eurostd.name, self.euro_stds))
             list_euro_stds.sort()
@@ -662,8 +581,8 @@ class RoadEmissionCalculator:
                                                                    self.dlg.cmbBoxSegment.currentText())
         self.selected_euro_std = self.get_object_from_array_by_name(self.euro_stds, self.dlg.cmbBoxEuroStd.currentText())
         if len(self.selected_category) > 0 and len(self.selected_fuel) > 0 and len(self.selected_segment) > 0 and len(self.selected_euro_std) > 0:
-            filtred_modes = emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0], segment=self.selected_segment[0],
-                                                             eurostd=self.selected_euro_std[0])
+            filtred_modes = list(emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0], segment=self.selected_segment[0],
+                                                             eurostd=self.selected_euro_std[0]))
             self.modes = set(x.mode for x in filtred_modes)
             list_modes = list(map(lambda mode: mode.name, self.modes))
             list_modes.sort()
@@ -680,11 +599,35 @@ class RoadEmissionCalculator:
                                                                     self.dlg.cmbBoxEuroStd.currentText())
         self.selected_mode = self.get_object_from_array_by_name(self.modes, self.dlg.cmbBoxMode.currentText())
         if len(self.selected_category) > 0 and len(self.selected_fuel) > 0 and len(self.selected_segment) > 0 and len(self.selected_euro_std) > 0 and len(self.selected_mode):
-            filtred_pollutants = emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0],
+            filtred_pollutants = list(emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0],
                                                               segment=self.selected_segment[0],
-                                                         eurostd=self.selected_euro_std[0], mode=self.selected_mode[0])
+                                                         eurostd=self.selected_euro_std[0], mode=self.selected_mode[0]))
             pollutants = list(map(lambda pollutant: pollutant.name, set(x.pollutant for x in filtred_pollutants)))
             self.enable_pollutants(pollutants)
+            if self.planner:
+                type_category = emission.vehicles.Vehicle.get_type_for_category(
+                    self.dlg.cmbBoxVehicleType.currentText())
+                if type_category == emission.vehicles.VehicleTypes.CAR:
+                    self.planner._vehicle = emission.vehicles.Car()
+                if type_category == emission.vehicles.VehicleTypes.BUS or type_category == emission.vehicles.VehicleTypes.TRUCK:
+                    if type_category == emission.vehicles.VehicleTypes.BUS:
+                        self.planner._vehicle = emission.vehicles.Bus()
+                    if type_category == emission.vehicles.VehicleTypes.TRUCK:
+                        self.planner._vehicle = emission.vehicles.Truck()
+                if type_category == emission.vehicles.VehicleTypes.LCATEGORY:
+                    self.planner._vehicle = emission.vehicles.LCategory()
+                if type_category == emission.vehicles.VehicleTypes.VAN:
+                    self.planner._vehicle = emission.vehicles.Van()
+                self.planner._vehicle.fuel_type = self.dlg.cmbBoxFuelType.currentText()
+                self.planner._vehicle.segment = self.dlg.cmbBoxSegment.currentText()
+                self.planner._vehicle.euro_std = self.dlg.cmbBoxEuroStd.currentText()
+                self.planner._vehicle.mode = self.dlg.cmbBoxMode.currentText()
+                self.planner._pollutants = {}
+                for x in self.pollutants_checkboxes:
+                    if self.pollutants_checkboxes[x].isEnabled():
+                        self.planner.add_pollutant(x)
+                self.planner._calculate_emissions()
+                self.sort_routes_by_selection()
 
     def enable_pollutants(self, pollutants):
         for x in pollutants:
@@ -695,8 +638,6 @@ class RoadEmissionCalculator:
             x.setEnabled(False)
 
     def save_settings(self):
-        print("Plugin directory: {}".format(os.path.dirname(__file__)))
-
         settings = {
             "startPoint": [self.dlg.lineEditStartX.text(), self.dlg.lineEditStartY.text()],
             "endPoint": [self.dlg.lineEditEndX.text(), self.dlg.lineEditEndY.text()],
@@ -724,14 +665,9 @@ class RoadEmissionCalculator:
 
     def load_settings(self):
         settings_json_file = os.path.join(os.path.dirname(__file__), 'settings.json')
-        settings_data = {}
         if os.path.isfile(settings_json_file):
-            # with gzip.open(gzip_json, "rb") as data_file:
-            #     data = json.loads(data_file.read().decode("ascii"))
-            # return data
             settings_data = json.load(open(settings_json_file))
 
-            print ("load coordinates: {}".format(settings_data["startPoint"]))
             self.dlg.lineEditStartX.setText(settings_data["startPoint"][0])
             self.dlg.lineEditStartY.setText(settings_data["startPoint"][1])
             self.dlg.lineEditEndX.setText(settings_data["endPoint"][0])
@@ -766,14 +702,11 @@ class RoadEmissionCalculator:
             self.dlg.checkBoxPmExhaust.setChecked(settings_data["pm"])
 
 
-
-
     def get_object_from_array_by_name(self, array, name):
         if len(array) == 0:
             return []
         else:
             return list(filter(lambda obj: obj.name == name, array))
-
 
     def run(self):
         """Run method that performs all the real work"""
