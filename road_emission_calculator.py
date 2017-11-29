@@ -781,3 +781,7 @@ class RoadEmissionCalculator:
             self.canvas.unsetMapTool(self.mapTool)
         else:
             self.dlg.widgetLoading.setShown(False)
+            self.remove_start_point()
+            self.remove_end_point()
+            self.remove_layer("Selected")
+            self.remove_layer("Route")
