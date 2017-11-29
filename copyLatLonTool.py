@@ -1,4 +1,4 @@
-from PyQt4.QtCore import Qt, pyqtSignal, QVariant
+from PyQt4.QtCore import Qt, pyqtSignal, QVariant, QSettings
 from PyQt4.QtGui import QApplication, QAction
 from qgis.core import QgsCoordinateTransform, QgsPoint
 from qgis.gui import QgsMapTool, QgsMessageBar
@@ -161,8 +161,13 @@ class CopyLatLonTool(QgsMapTool):
                 self.dlg.lineEditEndX.setText(str(round(pt.x(), 2)))
                 self.dlg.lineEditEndY.setText(str(round(pt.y(), 2)))
 
+            # get default CRS
+            canvas = self.iface.mapCanvas()
+            mapRenderer = canvas.mapRenderer()
+            srs = mapRenderer.destinationCrs()
+
             ## create an empty memory layer
-            vl = QgsVectorLayer("Point", self.point_name, "memory")
+            vl = QgsVectorLayer("Point?crs="+srs.authid(), self.point_name, "memory")
             ## define and add a field ID to memory layer "myLayer"
             provider = vl.dataProvider()
             provider.addAttributes([QgsField("ID", QVariant.Int)])

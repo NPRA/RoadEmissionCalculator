@@ -97,14 +97,12 @@ class RoadEmissionCalculator:
 
         # Declare instance attributes
         self.actions = []
-        self.categories = []
+        self.vehicle_categories = []
         self.selected_category = []
         self.selected_fuel = []
         self.selected_segment = []
         self.selected_euro_std = []
         self.selected_mode = []
-        # self.fuels = []
-        # self.segments = []
         self.menu = self.tr(u'&Road Emission Calculator')
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'RoadEmissionCalculator')
@@ -124,35 +122,45 @@ class RoadEmissionCalculator:
 
         self.selected_route_id = -1
 
+        # Signals: Route parameters
         self.dlg.btnAddStartPoint.clicked.connect(self.add_start_point)
         self.dlg.btnAddEndPoint.clicked.connect(self.add_end_point)
         self.dlg.btnRemoveStartPoint.clicked.connect(self.remove_start_point)
         self.dlg.btnRemoveEndPoint.clicked.connect(self.remove_end_point)
+        self.dlg.cmbBoxLoad.currentIndexChanged.connect(self.set_planner_none)
+        self.dlg.lineEditHeight.textChanged.connect(self.set_planner_none)
+        self.dlg.lineEditLength.textChanged.connect(self.set_planner_none)
 
+        # Widget loading overlay
         self.dlg.widgetLoading.setShown(False)
         self.overlay = Overlay(self.dlg.widgetLoading)
         self.overlay.resize(785,455)
         self.overlay.hide()
 
+        # Road Emission Planner Thread
         self.road_emission_planner_thread = RoadEmissionPlannerThread()
         self.road_emission_planner_thread.plannerFinished.connect(self.on_road_emission_planner_finished)
 
-        self.dlg.btnGetEmissions.clicked.connect(self.on_road_emission_planner_start)
+        # Signals: Set vehicle
         self.dlg.cmbBoxVehicleType.currentIndexChanged.connect(self.set_fuels)
         self.dlg.cmbBoxFuelType.currentIndexChanged.connect(self.set_segments)
         self.dlg.cmbBoxSegment.currentIndexChanged.connect(self.set_euro_std)
         self.dlg.cmbBoxEuroStd.currentIndexChanged.connect(self.set_mode)
         self.dlg.cmbBoxMode.currentIndexChanged.connect(self.set_pollutants)
+
+        # Signals: Summary and show layer in the map
         self.dlg.listWidget.itemClicked.connect(self.select_route)
         self.dlg.cmbBoxSortBy.currentIndexChanged.connect(self.sort_routes_by_selection)
-        self.dlg.cmbBoxLoad.currentIndexChanged.connect(self.set_planner_none)
-        self.dlg.lineEditHeight.textChanged.connect(self.set_planner_none)
-        self.dlg.lineEditLength.textChanged.connect(self.set_planner_none)
 
-        self.dlg.checkBoxShowInGraph.clicked.connect(self.activate_cumulative)
+        # Signals: Show results in graph
+        self.dlg.checkBoxShowInGraph.clicked.connect(self.activate_graph_cumulative_curve_chckbox)
 
+        # Buttons: Load and save settings
         self.dlg.btnSaveSettings.clicked.connect(self.save_settings)
         self.dlg.btnLoadSettings.clicked.connect(self.load_settings)
+
+        # Button: Start calculate emission/show result in graph when isChecked
+        self.dlg.btnGetEmissions.clicked.connect(self.on_road_emission_planner_start)
 
         # init with default values
         self.dlg.lineEditLength.setText('12')
@@ -265,12 +273,11 @@ class RoadEmissionCalculator:
         self.dlg.btnAddEndPoint.setIcon(QIcon(os.path.dirname(__file__) + "/images/pencil_64.png"))
         self.dlg.btnRemoveStartPoint.setIcon(QIcon(os.path.dirname(__file__) + "/images/trash_64.png"))
         self.dlg.btnRemoveEndPoint.setIcon(QIcon(os.path.dirname(__file__) + "/images/trash_64.png"))
-        # self.dlg.textEditSummary.setReadOnly(True)
         self.dlg.lineEditStartX.setReadOnly(True)
         self.dlg.lineEditStartY.setReadOnly(True)
         self.dlg.lineEditEndX.setReadOnly(True)
         self.dlg.lineEditEndY.setReadOnly(True)
-        self.activate_cumulative()
+        self.activate_graph_cumulative_curve_chckbox()
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -283,7 +290,7 @@ class RoadEmissionCalculator:
         del self.toolbar
         self.canvas.unsetMapTool(self.mapTool)
 
-    def activate_cumulative(self):
+    def activate_graph_cumulative_curve_chckbox(self):
         self.dlg.checkBoxCumulative.setEnabled(self.dlg.checkBoxShowInGraph.isChecked())
 
     def set_new_point(self, point_name):
@@ -475,9 +482,14 @@ class RoadEmissionCalculator:
             self.show_route_in_map(route, "Selected route", 4)
 
     def show_route_in_map(self, route, route_name, style_width):
+        # get default CRS
+        canvas = self.iface.mapCanvas()
+        mapRenderer = canvas.mapRenderer()
+        srs = mapRenderer.destinationCrs()
         # create an empty memory layer
-        vl = QgsVectorLayer("LineString", route_name + str(route.id + 1), "memory")
+        vl = QgsVectorLayer("LineString?crs="+srs.authid(), route_name + str(route.id + 1), "memory")
         # define and add a field ID to memory layer "Route"
+
         provider = vl.dataProvider()
         provider.addAttributes([QgsField("ID", QVariant.Int)])
         # create a new feature for the layer "Route"
@@ -550,16 +562,16 @@ class RoadEmissionCalculator:
                                         """)
 
     def set_categories(self):
-        self.categories = list(emission.session.query(emission.models.Category).all())
-        list_categories = list(map(lambda category: category.name, self.categories))
+        self.vehicle_categories = list(emission.session.query(emission.models.Category).all())
+        list_categories = list(map(lambda category: category.name, self.vehicle_categories))
         list_categories.sort()
         self.dlg.cmbBoxVehicleType.addItems(list_categories)
-        self.selected_category = self.get_object_from_array_by_name(self.categories,
+        self.selected_category = self.get_object_from_array_by_name(self.vehicle_categories,
                                                                     self.dlg.cmbBoxVehicleType.currentText())
 
     def set_fuels(self):
         self.dlg.cmbBoxFuelType.clear()
-        self.selected_category = self.get_object_from_array_by_name(self.categories,
+        self.selected_category = self.get_object_from_array_by_name(self.vehicle_categories,
                                                                     self.dlg.cmbBoxVehicleType.currentText())
         if len(self.selected_category) > 0:
             filtred_fuels = list(emission.models.filter_parms(cat=self.selected_category[0]))
@@ -570,7 +582,7 @@ class RoadEmissionCalculator:
 
     def set_segments(self):
         self.dlg.cmbBoxSegment.clear()
-        self.selected_category = self.get_object_from_array_by_name(self.categories,
+        self.selected_category = self.get_object_from_array_by_name(self.vehicle_categories,
                                                                     self.dlg.cmbBoxVehicleType.currentText())
         self.selected_fuel = self.get_object_from_array_by_name(self.fuels, self.dlg.cmbBoxFuelType.currentText())
         if len(self.selected_category) > 0 and len(self.selected_fuel) > 0:
@@ -584,7 +596,7 @@ class RoadEmissionCalculator:
 
     def set_euro_std(self):
         self.dlg.cmbBoxEuroStd.clear()
-        self.selected_category = self.get_object_from_array_by_name(self.categories,
+        self.selected_category = self.get_object_from_array_by_name(self.vehicle_categories,
                                                                     self.dlg.cmbBoxVehicleType.currentText())
         self.selected_fuel = self.get_object_from_array_by_name(self.fuels, self.dlg.cmbBoxFuelType.currentText())
         self.selected_segment = self.get_object_from_array_by_name(self.segments, self.dlg.cmbBoxSegment.currentText())
@@ -597,7 +609,7 @@ class RoadEmissionCalculator:
 
     def set_mode(self):
         self.dlg.cmbBoxMode.clear()
-        self.selected_category = self.get_object_from_array_by_name(self.categories,
+        self.selected_category = self.get_object_from_array_by_name(self.vehicle_categories,
                                                                     self.dlg.cmbBoxVehicleType.currentText())
         self.selected_fuel = self.get_object_from_array_by_name(self.fuels, self.dlg.cmbBoxFuelType.currentText())
         self.selected_segment = self.get_object_from_array_by_name(self.segments,
@@ -613,7 +625,7 @@ class RoadEmissionCalculator:
 
     def set_pollutants(self):
         self.disable_all_pollutants()
-        self.selected_category = self.get_object_from_array_by_name(self.categories,
+        self.selected_category = self.get_object_from_array_by_name(self.vehicle_categories,
                                                                     self.dlg.cmbBoxVehicleType.currentText())
         self.selected_fuel = self.get_object_from_array_by_name(self.fuels, self.dlg.cmbBoxFuelType.currentText())
         self.selected_segment = self.get_object_from_array_by_name(self.segments,
