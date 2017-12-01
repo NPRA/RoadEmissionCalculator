@@ -1,5 +1,5 @@
 from PyQt4.QtCore import *
-
+from emission.exceptions import RouteError
 
 class RoadEmissionPlannerThread(QThread):
     plannerFinished = pyqtSignal()
@@ -12,8 +12,19 @@ class RoadEmissionPlannerThread(QThread):
         self.emission_planner = planner
 
     def _run_planner(self):
-        self.emission_planner._get_routes()
+        try:
+            self.emission_planner._get_routes()
+        except RouteError as err:
+            print ("ioerror: {}".format(err))
+            self._json_data = {}
+            raise RouteError("IOError: {}".format(err))
+        # except Exception:
+        #     print
 
     def run(self):
-        self._run_planner()
-        self.plannerFinished.emit()
+        try:
+            self._run_planner()
+            self.plannerFinished.emit()
+        except:
+            print "Caught an exception in thread "
+            self.plannerFinished.emit()

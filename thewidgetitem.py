@@ -59,9 +59,10 @@ class TheWidgetItem(QtGui.QWidget, FORM_CLASS):
         # self.itemClicked.connect(self.item_click)
         self.route_id = -1
         self.setLayout(self.allQHBoxLayout)
-
+        self.lblErrorMsg.hide()
 
     def set_route_name(self, text, color):
+        self.lblErrorMsg.hide()
         self.lblRouteName.setText(text)
         self.lblRouteName.setStyleSheet('color: rgb('+str(color[0])+','+str(color[1])+','+str(color[2])+')')
 
@@ -69,12 +70,22 @@ class TheWidgetItem(QtGui.QWidget, FORM_CLASS):
         self.route_id = id
 
     def set_distance_time(self, distance, time):
+        self.lblDistanceTime.show()
         self.lblDistanceTime.setText("Distance: {}, driving time: {}".format(distance, time))
+
+    def set_error_msg(self, msg):
+        self.lblRouteName.hide()
+        self.lblDistanceTime.hide()
+        self.hide_all_lbl_pollutants()
+        self.lblErrorMsg.show()
+        self.lblErrorMsg.setText(msg)
 
     def hide_all_lbl_pollutants(self):
         for label in self.labels:
             label.setText("")
+            label.hide()
 
     def set_pollutants(self, idx, plt, value):
         label = self.labels[idx]
         label.setText("{}: {}".format(plt, value))
+        label.show()

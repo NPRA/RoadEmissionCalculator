@@ -313,14 +313,14 @@ class RoadEmissionCalculator:
 
     def add_start_point(self):
         # only one start point can be in canvas/legend
-        self.set_planner_none()
+        self.remove_layers()
         self.remove_start_point()
         self.set_new_point("Start_point")
         # self.dlg.hide()
 
     def add_end_point(self):
         # only one end point can be in canvas/legend
-        self.set_planner_none()
+        self.remove_layers()
         self.remove_end_point()
         self.set_new_point("End_point")
         # self.dlg.hide()
@@ -397,6 +397,7 @@ class RoadEmissionCalculator:
                 if self.pollutants_checkboxes[x].isEnabled():
                     self.planner.add_pollutant(x)
 
+            self.dlg.listWidget.clear()
             self.dlg.widgetLoading.setShown(True)
             self.overlay.show()
             self.road_emission_planner_thread.set_planner(self.planner)
@@ -405,8 +406,11 @@ class RoadEmissionCalculator:
     def on_road_emission_planner_finished(self):
         self.overlay.hide()
         self.remove_layer("Route")
-        self.road_emission_planner_finished()
         self.dlg.widgetLoading.setShown(False)
+        if 'routes' in self.planner._json_data:
+            self.road_emission_planner_finished()
+        else:
+            self.add_error_to_list_widget("Unable to get a good response from web service.")
 
     def road_emission_planner_finished(self):
         self.planner._calculate_emissions()
@@ -419,7 +423,6 @@ class RoadEmissionCalculator:
             self.dlg.cmbBoxSortBy.addItems(pollutant_types)
             for route in routes:
                 self.show_route_in_map(route,"Route", 2)
-
             self.sort_routes_by_selection()
             self.show_pollutants_in_graph()
 
@@ -505,7 +508,6 @@ class RoadEmissionCalculator:
         # create an empty memory layer
         vl = QgsVectorLayer("LineString?crs="+srs.authid(), route_name + str(route.id + 1), "memory")
         # define and add a field ID to memory layer "Route"
-
         provider = vl.dataProvider()
         provider.addAttributes([QgsField("ID", QVariant.Int)])
         # create a new feature for the layer "Route"
@@ -576,6 +578,15 @@ class RoadEmissionCalculator:
                                              background-color:rgb(230, 230, 230);
                                         }
                                         """)
+
+    def add_error_to_list_widget(self, error_msg):
+        myQCustomQWidget = TheWidgetItem()
+        myQCustomQWidget.set_error_msg("Error: {}".format(error_msg))
+        myQCustomQWidget.hide_all_lbl_pollutants()
+        myQListWidgetItem = QListWidgetItem(self.dlg.listWidget)
+        myQListWidgetItem.setSizeHint(myQCustomQWidget.sizeHint())
+        self.dlg.listWidget.addItem(myQListWidgetItem)
+        self.dlg.listWidget.setItemWidget(myQListWidgetItem, myQCustomQWidget)
 
     def set_categories(self):
         self.vehicle_categories = list(emission.session.query(emission.models.Category).all())
@@ -719,7 +730,7 @@ class RoadEmissionCalculator:
             json.dump(settings, outfile)
 
     def load_settings(self):
-        self.set_planner_none()
+        self.remove_all_memory_layers()
         settings_json_file = os.path.join(os.path.dirname(__file__), 'settings.json')
         if os.path.isfile(settings_json_file):
             settings_data = json.load(open(settings_json_file))
@@ -767,6 +778,18 @@ class RoadEmissionCalculator:
     def closeEvent(self):
         print("Close event clicked")
 
+    def remove_all_memory_layers(self):
+        self.remove_start_point()
+        self.remove_end_point()
+        self.remove_layer("Selected")
+        self.remove_layer("Route")
+        self.set_planner_none()
+
+    def remove_layers(self):
+        self.remove_layer("Selected")
+        self.remove_layer("Route")
+        self.set_planner_none()
+
     def run(self):
         """Run method that performs all the real work"""
 
@@ -780,7 +803,7 @@ class RoadEmissionCalculator:
         self.set_categories()
 
         self.dlg.cmbBoxLoad.clear()
-        self.dlg.cmbBoxLoad.addItems(["0", "50", "100"])
+        self.dlg.cmbBoxLoad.addItems(["0", "0.5", "1"])
         self.dlg.lineEditStartX.setText("")
         self.dlg.lineEditStartY.setText("")
         self.dlg.lineEditEndX.setText("")
@@ -794,7 +817,6 @@ class RoadEmissionCalculator:
         self.dlg.show()
         # Run the dialog event loop
         result = self.dlg.exec_()
-        print ()
         # See if OK was pressed
         if result:
             # Do something useful here - delete the line containing pass and
@@ -802,9 +824,4 @@ class RoadEmissionCalculator:
             self.canvas.unsetMapTool(self.mapTool)
         else:
             self.dlg.widgetLoading.setShown(False)
-            # remove "memory" layers
-            print ("should remove layers")
-            self.remove_start_point()
-            self.remove_end_point()
-            self.remove_layer("Selected")
-            self.remove_layer("Route")
+            self.remove_all_memory_layers()
