@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt, QVariant, QObject
-from PyQt4.QtGui import QAction, QIcon, QColor, QWidget, QListWidget, QListWidgetItem
+from PyQt4.QtGui import QAction, QIcon, QColor, QWidget, QListWidget, QListWidgetItem, QDialogButtonBox
 from qgis.core import QGis, QgsCoordinateTransform, QgsRectangle, QgsPoint, QgsGeometry, QgsCoordinateReferenceSystem
 from qgis.gui import QgsRubberBand
 from Overlay import Overlay
@@ -33,21 +33,31 @@ from settings import SettingsWidget
 import sys
 import pip
 import os.path
-import matplotlib.pyplot as plt
+
 from thewidgetitem import TheWidgetItem
 import json
 
 plugin_dir = os.path.dirname(__file__)
 emissionCalculator_dir = os.path.join(plugin_dir, 'emission')
+matplotlib_dir = os.path.join(plugin_dir, 'matplotlib')
 try:
     import emission
-    from RoadEmissionPlannerThread import RoadEmissionPlannerThread
 except:
     pip.main(['install', '--target=%s' % emissionCalculator_dir, 'emission'])
     if emissionCalculator_dir not in sys.path:
         sys.path.append(emissionCalculator_dir)
     import emission
+try:
     from RoadEmissionPlannerThread import RoadEmissionPlannerThread
+except:
+    from RoadEmissionPlannerThread import RoadEmissionPlannerThread
+try:
+    import matplotlib.pyplot as plt
+except:
+    pip.main(['install', '--target=%s' % matplotlib_dir, 'matplolib'])
+    if matplotlib_dir not in sys.path:
+        sys.path.append(matplotlib_dir)
+    import matplotlib.pyplot as plt
 
 # from PyQt4.QtCore import *
 # Initialize Qt resources from file resources.py
@@ -166,6 +176,11 @@ class RoadEmissionCalculator:
         self.dlg.lineEditLength.setText('12')
         self.dlg.lineEditHeight.setText('4.4')
 
+        buttonBox = QDialogButtonBox(QDialogButtonBox.Close)
+        buttonBox.button(QDialogButtonBox.Close).clicked.connect(self.closeEvent)
+        # buttonBox.accepted.connect(self.closeEvent)
+        # self.dlg.closeButton.connect(self.closeEvent)
+
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
@@ -266,7 +281,6 @@ class RoadEmissionCalculator:
             text=self.tr(u''),
             callback=self.run,
             parent=self.iface.mainWindow())
-
         self.settingsDialog = SettingsWidget(self, self.iface, self.iface.mainWindow())
         self.mapTool = CopyLatLonTool(self.settingsDialog, self.iface, self.dlg)
         self.dlg.btnAddStartPoint.setIcon(QIcon(os.path.dirname(__file__) + "/images/pencil_64.png"))
@@ -302,12 +316,14 @@ class RoadEmissionCalculator:
         self.set_planner_none()
         self.remove_start_point()
         self.set_new_point("Start_point")
+        # self.dlg.hide()
 
     def add_end_point(self):
         # only one end point can be in canvas/legend
         self.set_planner_none()
         self.remove_end_point()
         self.set_new_point("End_point")
+        # self.dlg.hide()
 
     @staticmethod
     def remove_layer(id_name):
@@ -544,7 +560,7 @@ class RoadEmissionCalculator:
         minutes = int(minutes)
 
         myQCustomQWidget = TheWidgetItem()
-        myQCustomQWidget.set_route_name("Route" + str(route.id + 1))
+        myQCustomQWidget.set_route_name("Route" + str(route.id + 1), self.color_list[route.id])
         myQCustomQWidget.set_route_id(route.id)
         myQCustomQWidget.set_distance_time(str(distance) + " km", str(hours) + " hours and " + str(
             minutes) + " minutes.")
@@ -703,6 +719,7 @@ class RoadEmissionCalculator:
             json.dump(settings, outfile)
 
     def load_settings(self):
+        self.set_planner_none()
         settings_json_file = os.path.join(os.path.dirname(__file__), 'settings.json')
         if os.path.isfile(settings_json_file):
             settings_data = json.load(open(settings_json_file))
@@ -747,9 +764,13 @@ class RoadEmissionCalculator:
         else:
             return list(filter(lambda obj: obj.name == name, array))
 
+    def closeEvent(self):
+        print("Close event clicked")
+
     def run(self):
         """Run method that performs all the real work"""
-        # set input parameters to default when the dialog has been closed and open again
+
+        # set input parameters to default when dialog is open
         self.dlg.cmbBoxVehicleType.clear()
         self.dlg.cmbBoxFuelType.clear()
         self.dlg.cmbBoxSegment.clear()
@@ -769,11 +790,11 @@ class RoadEmissionCalculator:
         self.dlg.checkBoxCumulative.setChecked(False)
         self.uncheck_all_pollutants()
 
-
         # show the dialog
         self.dlg.show()
         # Run the dialog event loop
         result = self.dlg.exec_()
+        print ()
         # See if OK was pressed
         if result:
             # Do something useful here - delete the line containing pass and
@@ -781,6 +802,8 @@ class RoadEmissionCalculator:
             self.canvas.unsetMapTool(self.mapTool)
         else:
             self.dlg.widgetLoading.setShown(False)
+            # remove "memory" layers
+            print ("should remove layers")
             self.remove_start_point()
             self.remove_end_point()
             self.remove_layer("Selected")

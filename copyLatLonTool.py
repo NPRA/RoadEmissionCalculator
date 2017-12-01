@@ -150,6 +150,7 @@ class CopyLatLonTool(QgsMapTool):
         '''Capture the coordinate when the mouse button has been released,
         format it, and copy it to the clipboard.'''
         try:
+            result = None
             pt = self.toMapCoordinates(event.pos())
             if self.point_name == "Start_point":
                 # self.dlg.lblStartPoint.setText(str(round(pt.x(),2)) + "," + str(round(pt.y(),2)))
@@ -185,6 +186,8 @@ class CopyLatLonTool(QgsMapTool):
             self.canvas.unsetMapTool(self)
             # self.canvas.setCursor(Qt.ArrowCursor)
             self.iface.actionPan().trigger()
+            # self.dlg.exec_()
+
             # if self.capture4326:
             #     canvasCRS = self.canvas.mapSettings().destinationCrs()
             #     transform = QgsCoordinateTransform(canvasCRS, self.settings.epsg4326)

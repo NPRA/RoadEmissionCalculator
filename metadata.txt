@@ -1,7 +1,7 @@
-# This file contains metadata for your plugin. Since 
-# version 2.0 of QGIS this is the proper way to supply 
-# information about a plugin. The old method of 
-# embedding metadata in __init__.py will 
+# This file contains metadata for your plugin. Since
+# version 2.0 of QGIS this is the proper way to supply
+# information about a plugin. The old method of
+# embedding metadata in __init__.py will
 # is no longer supported since version 2.0.
 
 # This file should be included when you package your plugin.# Mandatory items:
@@ -9,12 +9,12 @@
 [general]
 name=Road Emission Calculator
 qgisMinimumVersion=2.0
-description=The plugin calculate emissons for selected roads.
-version=0.1
-author=Statens Vegvesen
-email=tomas.levin@vegvesen.no
+description=The plugin calculate emissions for selected roads. The plugin using external library "EmissionCalculatorLib". This python library uses formulas and factors from EU to calculate the emission(s) from personal cars, busses to trailers of various sizes give a start and stop point.
+version=0.2
+author=Statens Vegvesen, Juraj Cirbus
+email=tomas.levin@vegvesen.no, juraj.cirbus@norconsult.com
 
-about=The plugin calculate emissons for selected roads.
+about=RoadEmissionCalculator is a plugin to easily calculate emissions for selected vehicle and suggested road(s) between two points. Optionally is possible to present calculated emission(s) in graph.
 
 tracker=https://github.com/NPRA/RoadEmissionCalculator/issues
 repository=https://github.com/NPRA/RoadEmissionCalculator.git
@@ -22,8 +22,9 @@ repository=https://github.com/NPRA/RoadEmissionCalculator.git
 
 # Recommended items:
 
-# Uncomment the following line and add your changelog:
-# changelog=
+changelog:
+    Version 0.2:
+    * Calculate emission(s) for personal cars.
 
 # Tags are comma separated with spaces allowed
 tags=QGIS
