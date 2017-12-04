@@ -26,8 +26,6 @@ from qgis.core import QGis, QgsCoordinateTransform, QgsRectangle, QgsPoint, QgsG
 from qgis.gui import QgsRubberBand
 from Overlay import Overlay
 
-from qgis.core import QgsVectorLayer, QgsField, QgsMapLayerRegistry, QgsFeature, QgsGeometry
-
 from copyLatLonTool import CopyLatLonTool
 from settings import SettingsWidget
 import sys
@@ -64,7 +62,8 @@ except:
 import resources
 # Import the code for the dialog
 from road_emission_calculator_dialog import RoadEmissionCalculatorDialog
-
+from layer_mng import LayerMng
+import layer_mng
 
 class RoadEmissionCalculator:
     """QGIS Plugin Implementation."""
@@ -105,6 +104,7 @@ class RoadEmissionCalculator:
         # Create the dialog (after translation) and keep reference
         self.dlg = RoadEmissionCalculatorDialog()
 
+        self.layer_mng = LayerMng(self.iface)
         # Declare instance attributes
         self.actions = []
         self.vehicle_categories = []
@@ -137,9 +137,9 @@ class RoadEmissionCalculator:
         self.dlg.btnAddEndPoint.clicked.connect(self.add_end_point)
         self.dlg.btnRemoveStartPoint.clicked.connect(self.remove_start_point)
         self.dlg.btnRemoveEndPoint.clicked.connect(self.remove_end_point)
-        self.dlg.cmbBoxLoad.currentIndexChanged.connect(self.set_planner_none)
-        self.dlg.lineEditHeight.textChanged.connect(self.set_planner_none)
-        self.dlg.lineEditLength.textChanged.connect(self.set_planner_none)
+        self.dlg.cmbBoxLoad.currentIndexChanged.connect(self.remove_route_layers)
+        self.dlg.lineEditHeight.textChanged.connect(self.remove_route_layers)
+        self.dlg.lineEditLength.textChanged.connect(self.remove_route_layers)
 
         # Widget loading overlay
         self.dlg.widgetLoading.setShown(False)
@@ -313,39 +313,33 @@ class RoadEmissionCalculator:
 
     def add_start_point(self):
         # only one start point can be in canvas/legend
-        self.remove_layers()
+        self.remove_route_layers()
         self.remove_start_point()
-        self.set_new_point("Start_point")
+        self.set_new_point(layer_mng.LayerNames.STARTPOINT)
         # self.dlg.hide()
 
     def add_end_point(self):
         # only one end point can be in canvas/legend
-        self.remove_layers()
+        self.remove_route_layers()
         self.remove_end_point()
-        self.set_new_point("End_point")
+        self.set_new_point(layer_mng.LayerNames.ENDPOINT)
         # self.dlg.hide()
-
-    @staticmethod
-    def remove_layer(id_name):
-        lrs = QgsMapLayerRegistry.instance().mapLayers()
-        for i in range(len(lrs.keys())):
-            if id_name in lrs.keys()[i]:
-                QgsMapLayerRegistry.instance().removeMapLayer(lrs.keys()[i])
 
     def remove_start_point(self):
         self.set_planner_none()
         self.dlg.lineEditStartX.setText("")
         self.dlg.lineEditStartY.setText("")
-        self.remove_layer("Start_point")
+        self.layer_mng.remove_layer(layer_mng.LayerNames.STARTPOINT)
 
     def remove_end_point(self):
         self.set_planner_none()
         self.dlg.lineEditEndX.setText("")
         self.dlg.lineEditEndY.setText("")
-        self.remove_layer("End_point")
+        self.layer_mng.remove_layer(layer_mng.LayerNames.ENDPOINT)
 
     def set_planner_none(self):
         self.planner = None
+        self.dlg.listWidget.clear()
 
     'set new Layers to use the Project-CRS'
 
@@ -405,7 +399,7 @@ class RoadEmissionCalculator:
 
     def on_road_emission_planner_finished(self):
         self.overlay.hide()
-        self.remove_layer("Route")
+        self.layer_mng.remove_layer(layer_mng.LayerNames.ROUTE)
         self.dlg.widgetLoading.setShown(False)
         if 'routes' in self.planner._json_data:
             self.road_emission_planner_finished()
@@ -422,7 +416,7 @@ class RoadEmissionCalculator:
             self.dlg.cmbBoxSortBy.addItem("Time")
             self.dlg.cmbBoxSortBy.addItems(pollutant_types)
             for route in routes:
-                self.show_route_in_map(route,"Route", 2)
+                self.layer_mng.create_layer(route.path, layer_mng.LayerNames.ROUTE, layer_mng.GeometryTypes.LINE, 2, route.id, self.color_list)
             self.sort_routes_by_selection()
             self.show_pollutants_in_graph()
 
@@ -495,48 +489,13 @@ class RoadEmissionCalculator:
             if (route_item.route_id == self.selected_route_id):
                 self.clear_selection()
                 return
-            self.remove_layer("Selected")
+            self.layer_mng.remove_layer(layer_mng.LayerNames.SELECTED)
             self.selected_route_id = route_item.route_id
             route = self.planner.routes[route_item.route_id]
-            self.show_route_in_map(route, "Selected route", 4)
-
-    def show_route_in_map(self, route, route_name, style_width):
-        # get default CRS
-        canvas = self.iface.mapCanvas()
-        mapRenderer = canvas.mapRenderer()
-        srs = mapRenderer.destinationCrs()
-        # create an empty memory layer
-        vl = QgsVectorLayer("LineString?crs="+srs.authid(), route_name + str(route.id + 1), "memory")
-        # define and add a field ID to memory layer "Route"
-        provider = vl.dataProvider()
-        provider.addAttributes([QgsField("ID", QVariant.Int)])
-        # create a new feature for the layer "Route"
-        ft = QgsFeature()
-        # set the value 1 to the new field "ID"
-        ft.setAttributes([1])
-        line_points = []
-
-        for i in range(len(route.path)):
-            if (i + 1) < len(route.path):
-                line_points.append(QgsPoint(route.path[i][0], route.path[i][1]))
-        # set the geometry defined from the point X: 50, Y: 100
-        ft.setGeometry(QgsGeometry.fromPolyline(line_points))
-        # finally insert the feature
-        provider.addFeatures([ft])
-
-        # set color
-        symbols = vl.rendererV2().symbols()
-        sym = symbols[0]
-        color = self.color_list[route.id]
-        sym.setColor(QColor.fromRgb(color[0], color[1], color[2]))
-        # set width
-        sym.setWidth(style_width)
-
-        # add layer to the registry and over the map canvas
-        QgsMapLayerRegistry.instance().addMapLayer(vl)
+            self.layer_mng.create_layer(route.path, layer_mng.LayerNames.SELECTED, layer_mng.GeometryTypes.LINE, 4, route.id, self.color_list)
 
     def clear_selection(self):
-        self.remove_layer("Selected")
+        self.layer_mng.remove_layer(layer_mng.LayerNames.SELECTED)
         self.dlg.listWidget.clearSelection()
         self.selected_route_id = -1
 
@@ -731,14 +690,21 @@ class RoadEmissionCalculator:
 
     def load_settings(self):
         self.remove_all_memory_layers()
+        self.dlg.listWidget.clear()
         settings_json_file = os.path.join(os.path.dirname(__file__), 'settings.json')
         if os.path.isfile(settings_json_file):
             settings_data = json.load(open(settings_json_file))
 
             self.dlg.lineEditStartX.setText(settings_data["startPoint"][0])
             self.dlg.lineEditStartY.setText(settings_data["startPoint"][1])
+            if self.dlg.lineEditStartX.text() != "" and self.dlg.lineEditStartY.text() != "":
+                self.layer_mng.create_layer([float(self.dlg.lineEditStartX.text()), float(self.dlg.lineEditStartY.text())],
+                                            layer_mng.LayerNames.STARTPOINT, layer_mng.GeometryTypes.POINT,None, None,None)
             self.dlg.lineEditEndX.setText(settings_data["endPoint"][0])
             self.dlg.lineEditEndY.setText(settings_data["endPoint"][1])
+            if self.dlg.lineEditEndX.text() != "" and self.dlg.lineEditEndY.text() != "":
+                self.layer_mng.create_layer([float(self.dlg.lineEditEndX.text()), float(self.dlg.lineEditEndY.text())],
+                                            layer_mng.LayerNames.ENDPOINT, layer_mng.GeometryTypes.POINT, None, None,None)
             load_index = self.dlg.cmbBoxLoad.findText(settings_data["load"], Qt.MatchFixedString)
             if load_index >= 0:
                 self.dlg.cmbBoxLoad.setCurrentIndex(load_index)
@@ -781,13 +747,13 @@ class RoadEmissionCalculator:
     def remove_all_memory_layers(self):
         self.remove_start_point()
         self.remove_end_point()
-        self.remove_layer("Selected")
-        self.remove_layer("Route")
+        self.layer_mng.remove_layer(layer_mng.LayerNames.SELECTED)
+        self.layer_mng.remove_layer(layer_mng.LayerNames.ROUTE)
         self.set_planner_none()
 
-    def remove_layers(self):
-        self.remove_layer("Selected")
-        self.remove_layer("Route")
+    def remove_route_layers(self):
+        self.layer_mng.remove_layer(layer_mng.LayerNames.SELECTED)
+        self.layer_mng.remove_layer(layer_mng.LayerNames.ROUTE)
         self.set_planner_none()
 
     def run(self):

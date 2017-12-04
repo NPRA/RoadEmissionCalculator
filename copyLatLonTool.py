@@ -6,6 +6,7 @@ from qgis.core import QgsVectorLayer, QgsField, QgsMapLayerRegistry, QgsFeature,
 from qgis.gui import QgsMapToolPan
 
 from LatLon import LatLon
+from layer_mng import LayerMng
 import mgrs
 
 class CopyLatLonTool(QgsMapTool):
@@ -23,6 +24,7 @@ class CopyLatLonTool(QgsMapTool):
         self.capture4326 = False
         self.dlg = dlg
         self.point_name = ""
+        self.layer_mng = LayerMng(self.iface)
         
     def activate(self):
         '''When activated set the cursor to a crosshair.'''
@@ -162,43 +164,11 @@ class CopyLatLonTool(QgsMapTool):
                 self.dlg.lineEditEndX.setText(str(round(pt.x(), 2)))
                 self.dlg.lineEditEndY.setText(str(round(pt.y(), 2)))
 
-            # get default CRS
-            canvas = self.iface.mapCanvas()
-            mapRenderer = canvas.mapRenderer()
-            srs = mapRenderer.destinationCrs()
-
-            ## create an empty memory layer
-            vl = QgsVectorLayer("Point?crs="+srs.authid(), self.point_name, "memory")
-            ## define and add a field ID to memory layer "myLayer"
-            provider = vl.dataProvider()
-            provider.addAttributes([QgsField("ID", QVariant.Int)])
-            ## create a new feature for the layer "myLayer"
-            ft = QgsFeature()
-            ## set the value 1 to the new field "ID"
-            ft.setAttributes([1])
-            ## set the geometry defined from the point X: 50, Y: 100
-            ft.setGeometry(QgsGeometry.fromPoint(QgsPoint(pt.x(), pt.y())))
-            ## finally insert the feature
-            provider.addFeatures([ft])
-            ## add layer to the registry and over the map canvas
-            QgsMapLayerRegistry.instance().addMapLayer(vl)
-
+            self.layer_mng.create_layer([pt.x(), pt.y()], self.point_name,"Point",None, None, None)
             self.canvas.unsetMapTool(self)
             # self.canvas.setCursor(Qt.ArrowCursor)
             self.iface.actionPan().trigger()
             # self.dlg.exec_()
 
-            # if self.capture4326:
-            #     canvasCRS = self.canvas.mapSettings().destinationCrs()
-            #     transform = QgsCoordinateTransform(canvasCRS, self.settings.epsg4326)
-            #     pt4326 = transform.transform(pt.x(), pt.y())
-            #     self.capturesig.emit(pt4326)
-            #     return
-            # msg = self.formatCoord(pt, self.settings.delimiter)
-            # formatString = self.coordFormatString()
-            # if msg != None:
-            #     clipboard = QApplication.clipboard()
-            #     clipboard.setText(msg)
-            #     self.iface.messageBar().pushMessage("", "{} coordinate {} copied to the clipboard".format(formatString, msg), level=QgsMessageBar.INFO, duration=4)
         except Exception as e:
             self.iface.messageBar().pushMessage("", "Invalid coordinate: {}".format(e), level=QgsMessageBar.WARNING, duration=4)
