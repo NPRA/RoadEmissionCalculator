@@ -729,13 +729,13 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>45</width>
+            <width>55</width>
             <height>26</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>45</width>
+            <width>55</width>
             <height>26</height>
            </size>
           </property>
@@ -754,13 +754,13 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>45</width>
+            <width>55</width>
             <height>26</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>45</width>
+            <width>55</width>
             <height>26</height>
            </size>
           </property>
@@ -1082,7 +1082,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -1121,13 +1121,13 @@
      <widget class="QPushButton" name="btnGetEmissions">
       <property name="minimumSize">
        <size>
-        <width>170</width>
+        <width>165</width>
         <height>32</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>170</width>
+        <width>165</width>
         <height>32</height>
        </size>
       </property>
@@ -1176,15 +1176,13 @@
     </item>
    </layout>
   </widget>
+  <zorder>widgetLoading</zorder>
+  <zorder>layoutWidget</zorder>
   <zorder>button_box</zorder>
   <zorder>groupBox_2</zorder>
   <zorder>groupBox</zorder>
   <zorder>groupBoxCalculator</zorder>
-  <zorder>btnGetEmissions</zorder>
-  <zorder>btnSaveSettings</zorder>
-  <zorder>btnLoadSettings</zorder>
   <zorder>groupBox_3</zorder>
-  <zorder>widgetLoading</zorder>
  </widget>
  <resources/>
  <connections>

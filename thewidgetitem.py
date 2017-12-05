@@ -22,6 +22,7 @@
 """
 
 import os
+import sys
 
 from PyQt4 import QtGui, uic, QtCore
 
@@ -33,33 +34,22 @@ class TheWidgetItem(QtGui.QWidget, FORM_CLASS):
     def __init__(self, parent=None):
         """Constructor."""
         super(TheWidgetItem, self).__init__(parent)
-        # Set up the user interface from Designer.
-        # After setupUI you can access any designer object by doing
-        # self.<objectname>, and you can use autoconnect slots - see
-        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
-        #widgets-and-dialogs-with-auto-connect
 
         self.setupUi(self)
 
         self.labels = [self.lblPlt1, self.lblPlt2, self.lblPlt3, self.lblPlt4, self.lblPlt5, self.lblPlt6]
 
         self.textQVBoxLayout = QtGui.QVBoxLayout()
-        # self.textQVBoxLayout.addWidget(self.label)
-        # self.textQVBoxLayout.addWidget(self.label_2)
         self.allQHBoxLayout = QtGui.QHBoxLayout()
-        # self.textDownQLabel = QtGui.QLabel()
-        # self.textDownQLabel.setMinimumHeight(90)
-
-        # self.textQVBoxLayout.addWidget(self.textDownQLabel)
-        # self.allQHBoxLayout.addWidget(self.label)
-        # self.allQHBoxLayout.addWidget(self.label_2, 2)
         verticalSpacer = QtGui.QSpacerItem(0, 60, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.textQVBoxLayout.addItem(verticalSpacer)
         self.allQHBoxLayout.addLayout(self.textQVBoxLayout)
-        # self.itemClicked.connect(self.item_click)
         self.route_id = -1
         self.setLayout(self.allQHBoxLayout)
         self.lblErrorMsg.hide()
+        if sys.platform == "linux2":
+            for label in self.labels:
+                label.setFont(QtGui.QFont('SansSerif', 10))
 
     def set_route_name(self, text, color):
         self.lblErrorMsg.hide()
@@ -71,7 +61,7 @@ class TheWidgetItem(QtGui.QWidget, FORM_CLASS):
 
     def set_distance_time(self, distance, time):
         self.lblDistanceTime.show()
-        self.lblDistanceTime.setText("Distance: {}, driving time: {}".format(distance, time))
+        self.lblDistanceTime.setText("Distance: {}, time: {}".format(distance, time))
 
     def set_error_msg(self, msg):
         self.lblRouteName.hide()

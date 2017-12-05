@@ -28,12 +28,13 @@ from Overlay import Overlay
 
 from copyLatLonTool import CopyLatLonTool
 from settings import SettingsWidget
-import sys
 import pip
 import os.path
 
 from thewidgetitem import TheWidgetItem
 import json
+import sys
+
 
 plugin_dir = os.path.dirname(__file__)
 emissionCalculator_dir = os.path.join(plugin_dir, 'emission')
@@ -41,7 +42,11 @@ matplotlib_dir = os.path.join(plugin_dir, 'matplotlib')
 try:
     import emission
 except:
-    pip.main(['install', '--target=%s' % emissionCalculator_dir, 'emission'])
+    if "win" in sys.platform:
+        # pip.main(['-m', 'install', '--target=%s' % emissionCalculator_dir, 'emission'])
+        pass
+    else:
+        pip.main(['install', '--target=%s' % emissionCalculator_dir, 'emission'])
     if emissionCalculator_dir not in sys.path:
         sys.path.append(emissionCalculator_dir)
     import emission
