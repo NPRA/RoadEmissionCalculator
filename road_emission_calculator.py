@@ -50,8 +50,7 @@ except:
         pass
     else:
         pip.main(['install', '--target=%s' % emissionCalculator_dir, 'emission'])
-    print ("SYS path: {}".format(sys.path))
-    import emission
+    from . import emission
 
 try:
     from RoadEmissionPlannerThread import RoadEmissionPlannerThread
