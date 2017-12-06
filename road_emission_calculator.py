@@ -40,17 +40,21 @@ plugin_dir = os.path.dirname(__file__)
 emissionCalculator_dir = os.path.join(plugin_dir, 'emission')
 matplotlib_dir = os.path.join(plugin_dir, 'matplotlib')
 
-if emissionCalculator_dir not in sys.path:
-    sys.path.append(emissionCalculator_dir)
 try:
     import emission
 except:
+    print("emission install target: {}".format(emissionCalculator_dir))
     if "win" in sys.platform:
         # pip.main(['-m', 'install', '--target=%s' % emissionCalculator_dir, 'emission'])
         pass
     else:
-        pip.main(['install', '--target=%s' % emissionCalculator_dir, 'emission'])
-    from . import emission
+        # pip.main(['install', '--target=%s' % emissionCalculator_dir, 'emission'])
+        pip.main(['install', '--user', '-U', 'emission'])
+
+    try:
+        from . import emission
+    except ImportError:
+        import emission
 
 try:
     from RoadEmissionPlannerThread import RoadEmissionPlannerThread
@@ -62,9 +66,8 @@ if matplotlib_dir not in sys.path:
 try:
     import matplotlib.pyplot as plt
 except:
-    pip.main(['install', '--target=%s' % matplotlib_dir, 'matplolib'])
-    if matplotlib_dir not in sys.path:
-        sys.path.append(matplotlib_dir)
+    # pip.main(['install', '--target=%s' % matplotlib_dir, 'matplolib'])
+    pip.main(['install', '--user', '-U', 'matplolib'])
     import matplotlib.pyplot as plt
 
 # from PyQt4.QtCore import *
