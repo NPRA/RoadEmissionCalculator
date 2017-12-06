@@ -42,13 +42,25 @@
     <rect>
      <x>10</x>
      <y>50</y>
-     <width>341</width>
+     <width>342</width>
      <height>42</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
      <widget class="QLabel" name="lblPlt1">
+      <property name="minimumSize">
+       <size>
+        <width>108</width>
+        <height>14</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>108</width>
+        <height>15</height>
+       </size>
+      </property>
       <property name="font">
        <font>
         <pointsize>11</pointsize>
@@ -61,6 +73,18 @@
     </item>
     <item row="0" column="1">
      <widget class="QLabel" name="lblPlt3">
+      <property name="minimumSize">
+       <size>
+        <width>108</width>
+        <height>15</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>108</width>
+        <height>15</height>
+       </size>
+      </property>
       <property name="font">
        <font>
         <pointsize>11</pointsize>
@@ -73,6 +97,18 @@
     </item>
     <item row="0" column="2">
      <widget class="QLabel" name="lblPlt5">
+      <property name="minimumSize">
+       <size>
+        <width>108</width>
+        <height>15</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>108</width>
+        <height>15</height>
+       </size>
+      </property>
       <property name="font">
        <font>
         <pointsize>11</pointsize>
@@ -85,6 +121,18 @@
     </item>
     <item row="1" column="0">
      <widget class="QLabel" name="lblPlt2">
+      <property name="minimumSize">
+       <size>
+        <width>108</width>
+        <height>15</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>108</width>
+        <height>15</height>
+       </size>
+      </property>
       <property name="font">
        <font>
         <pointsize>11</pointsize>
@@ -97,6 +145,18 @@
     </item>
     <item row="1" column="1">
      <widget class="QLabel" name="lblPlt4">
+      <property name="minimumSize">
+       <size>
+        <width>108</width>
+        <height>15</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>108</width>
+        <height>15</height>
+       </size>
+      </property>
       <property name="font">
        <font>
         <pointsize>11</pointsize>
@@ -109,6 +169,18 @@
     </item>
     <item row="1" column="2">
      <widget class="QLabel" name="lblPlt6">
+      <property name="minimumSize">
+       <size>
+        <width>108</width>
+        <height>15</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>108</width>
+        <height>15</height>
+       </size>
+      </property>
       <property name="font">
        <font>
         <pointsize>11</pointsize>
@@ -127,12 +199,24 @@
      <x>10</x>
      <y>3</y>
      <width>341</width>
-     <height>51</height>
+     <height>55</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_2">
     <item row="0" column="0">
      <widget class="QLabel" name="lblRouteName">
+      <property name="minimumSize">
+       <size>
+        <width>339</width>
+        <height>16</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>339</width>
+        <height>16</height>
+       </size>
+      </property>
       <property name="font">
        <font>
         <pointsize>13</pointsize>
@@ -147,6 +231,18 @@
     </item>
     <item row="1" column="0">
      <widget class="QLabel" name="lblDistanceTime">
+      <property name="minimumSize">
+       <size>
+        <width>339</width>
+        <height>16</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>339</width>
+        <height>16</height>
+       </size>
+      </property>
       <property name="text">
        <string>Length/Time</string>
       </property>
