@@ -41,18 +41,18 @@ class TheWidgetItem(QtGui.QWidget, FORM_CLASS):
 
         self.textQVBoxLayout = QtGui.QVBoxLayout()
         self.allQHBoxLayout = QtGui.QHBoxLayout()
-        verticalSpacer = QtGui.QSpacerItem(0, 60, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        verticalSpacer = QtGui.QSpacerItem(0, 70, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.textQVBoxLayout.addItem(verticalSpacer)
         self.allQHBoxLayout.addLayout(self.textQVBoxLayout)
         self.route_id = -1
         self.setLayout(self.allQHBoxLayout)
-        self.lblErrorMsg.hide()
+        # self.lblErrorMsg.hide()
         if sys.platform == "linux2":
             for label in self.labels:
                 label.setFont(QtGui.QFont('SansSerif', 10))
 
     def set_route_name(self, text, color):
-        self.lblErrorMsg.hide()
+        # self.lblErrorMsg.hide()
         self.lblRouteName.setText(text)
         self.lblRouteName.setStyleSheet('color: rgb('+str(color[0])+','+str(color[1])+','+str(color[2])+')')
 
@@ -67,8 +67,8 @@ class TheWidgetItem(QtGui.QWidget, FORM_CLASS):
         self.lblRouteName.hide()
         self.lblDistanceTime.hide()
         self.hide_all_lbl_pollutants()
-        self.lblErrorMsg.show()
-        self.lblErrorMsg.setText(msg)
+        # self.lblErrorMsg.show()
+        # self.lblErrorMsg.setText(msg)
 
     def hide_all_lbl_pollutants(self):
         for label in self.labels:
