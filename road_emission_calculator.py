@@ -39,6 +39,9 @@ import sys
 plugin_dir = os.path.dirname(__file__)
 emissionCalculator_dir = os.path.join(plugin_dir, 'emission')
 matplotlib_dir = os.path.join(plugin_dir, 'matplotlib')
+
+if emissionCalculator_dir not in sys.path:
+    sys.path.append(emissionCalculator_dir)
 try:
     import emission
 except:
@@ -50,10 +53,14 @@ except:
     if emissionCalculator_dir not in sys.path:
         sys.path.append(emissionCalculator_dir)
     import emission
+
 try:
     from RoadEmissionPlannerThread import RoadEmissionPlannerThread
 except:
     from RoadEmissionPlannerThread import RoadEmissionPlannerThread
+
+if matplotlib_dir not in sys.path:
+    sys.path.append(matplotlib_dir)
 try:
     import matplotlib.pyplot as plt
 except:
