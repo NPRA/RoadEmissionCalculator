@@ -1176,13 +1176,13 @@
     </item>
    </layout>
   </widget>
-  <zorder>widgetLoading</zorder>
   <zorder>layoutWidget</zorder>
   <zorder>button_box</zorder>
   <zorder>groupBox_2</zorder>
   <zorder>groupBox</zorder>
   <zorder>groupBoxCalculator</zorder>
   <zorder>groupBox_3</zorder>
+  <zorder>widgetLoading</zorder>
  </widget>
  <resources/>
  <connections>
