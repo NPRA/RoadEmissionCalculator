@@ -50,8 +50,7 @@ except:
         pass
     else:
         pip.main(['install', '--target=%s' % emissionCalculator_dir, 'emission'])
-    if emissionCalculator_dir not in sys.path:
-        sys.path.append(emissionCalculator_dir)
+    print ("SYS path: {}".format(sys.path))
     import emission
 
 try:
