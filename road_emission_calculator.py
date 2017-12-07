@@ -32,6 +32,7 @@ import pip
 import os.path
 
 from thewidgetitem import TheWidgetItem
+from errorwidgetitem import ErrorWidgetItem
 import json
 import sys
 
@@ -39,35 +40,41 @@ import sys
 plugin_dir = os.path.dirname(__file__)
 emissionCalculator_dir = os.path.join(plugin_dir, 'emission')
 matplotlib_dir = os.path.join(plugin_dir, 'matplotlib')
-
-try:
-    import emission
-except:
-    print("emission install target: {}".format(emissionCalculator_dir))
-    if "win" in sys.platform:
-        # pip.main(['-m', 'install', '--target=%s' % emissionCalculator_dir, 'emission'])
-        pass
-    else:
-        # pip.main(['install', '--target=%s' % emissionCalculator_dir, 'emission'])
-        pip.main(['install', '--user', '-U', 'emission'])
-
-    try:
-        from . import emission
-    except ImportError:
-        import emission
+if emissionCalculator_dir not in sys.path:
+    sys.path.append(emissionCalculator_dir)
+import emission
+# try:
+#     import emission
+# except:
+#     print("emission install target: {}".format(emissionCalculator_dir))
+#     # if "win" in sys.platform:
+#     #     # pip.main(['-m', 'install', '--target=%s' % emissionCalculator_dir, 'emission'])
+#     #     pass
+#     # else:
+#     print("Install emission")
+#     pip.main(['install', '--target=%s' % emissionCalculator_dir, 'emission'])
+#         # pip.main(['install', '--user', '-U', 'emission'])
+#     if emissionCalculator_dir not in sys.path:
+#         sys.path.append(emissionCalculator_dir)
+#     import emission
+#     # try:
+#     #     from . import emission
+#     # except ImportError:
+#     #     import emission
 
 try:
     from RoadEmissionPlannerThread import RoadEmissionPlannerThread
 except:
     from RoadEmissionPlannerThread import RoadEmissionPlannerThread
 
-if matplotlib_dir not in sys.path:
-    sys.path.append(matplotlib_dir)
+
 try:
     import matplotlib.pyplot as plt
 except:
-    # pip.main(['install', '--target=%s' % matplotlib_dir, 'matplolib'])
-    pip.main(['install', '--user', '-U', 'matplolib'])
+    pip.main(['install', '--target=%s' % matplotlib_dir, 'matplolib'])
+    # pip.main(['install', '--user', '-U', 'matplolib'])
+    if matplotlib_dir not in sys.path:
+        sys.path.append(matplotlib_dir)
     import matplotlib.pyplot as plt
 
 # from PyQt4.QtCore import *
@@ -552,13 +559,12 @@ class RoadEmissionCalculator:
                                         """)
 
     def add_error_to_list_widget(self, error_msg):
-        myQCustomQWidget = TheWidgetItem()
-        myQCustomQWidget.set_error_msg("Error: {}".format(error_msg))
-        myQCustomQWidget.hide_all_lbl_pollutants()
+        myQCustomErrorQWidget = ErrorWidgetItem()
+        myQCustomErrorQWidget.set_error_msg("Error: {}".format(error_msg))
         myQListWidgetItem = QListWidgetItem(self.dlg.listWidget)
-        myQListWidgetItem.setSizeHint(myQCustomQWidget.sizeHint())
+        myQListWidgetItem.setSizeHint(myQCustomErrorQWidget.sizeHint())
         self.dlg.listWidget.addItem(myQListWidgetItem)
-        self.dlg.listWidget.setItemWidget(myQListWidgetItem, myQCustomQWidget)
+        self.dlg.listWidget.setItemWidget(myQListWidgetItem, myQCustomErrorQWidget)
 
     def set_categories(self):
         self.vehicle_categories = list(emission.session.query(emission.models.Category).all())
