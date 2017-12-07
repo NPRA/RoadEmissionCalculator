@@ -38,29 +38,12 @@ import sys
 
 
 plugin_dir = os.path.dirname(__file__)
-emissionCalculator_dir = os.path.join(plugin_dir, 'emission')
+lib_dir = os.path.join(plugin_dir, 'lib')
 matplotlib_dir = os.path.join(plugin_dir, 'matplotlib')
-if emissionCalculator_dir not in sys.path:
-    sys.path.append(emissionCalculator_dir)
+if lib_dir not in sys.path:
+    sys.path.append(lib_dir)
+
 import emission
-# try:
-#     import emission
-# except:
-#     print("emission install target: {}".format(emissionCalculator_dir))
-#     # if "win" in sys.platform:
-#     #     # pip.main(['-m', 'install', '--target=%s' % emissionCalculator_dir, 'emission'])
-#     #     pass
-#     # else:
-#     print("Install emission")
-#     pip.main(['install', '--target=%s' % emissionCalculator_dir, 'emission'])
-#         # pip.main(['install', '--user', '-U', 'emission'])
-#     if emissionCalculator_dir not in sys.path:
-#         sys.path.append(emissionCalculator_dir)
-#     import emission
-#     # try:
-#     #     from . import emission
-#     # except ImportError:
-#     #     import emission
 
 try:
     from RoadEmissionPlannerThread import RoadEmissionPlannerThread
