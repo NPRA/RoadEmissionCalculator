@@ -63,12 +63,12 @@ class TheWidgetItem(QtGui.QWidget, FORM_CLASS):
         self.lblDistanceTime.show()
         self.lblDistanceTime.setText("Distance: {}, time: {}".format(distance, time))
 
-    def set_error_msg(self, msg):
-        self.lblRouteName.hide()
-        self.lblDistanceTime.hide()
-        self.hide_all_lbl_pollutants()
-        # self.lblErrorMsg.show()
-        # self.lblErrorMsg.setText(msg)
+    # def set_error_msg(self, msg):
+    #     self.lblRouteName.hide()
+    #     self.lblDistanceTime.hide()
+    #     self.hide_all_lbl_pollutants()
+    #     # self.lblErrorMsg.show()
+    #     # self.lblErrorMsg.setText(msg)
 
     def hide_all_lbl_pollutants(self):
         for label in self.labels:

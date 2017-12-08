@@ -110,12 +110,6 @@ class RoadEmissionCalculator:
         self.layer_mng = LayerMng(self.iface)
         # Declare instance attributes
         self.actions = []
-        self.vehicle_categories = []
-        self.selected_category = []
-        self.selected_fuel = []
-        self.selected_segment = []
-        self.selected_euro_std = []
-        self.selected_mode = []
         self.menu = self.tr(u'&Road Emission Calculator')
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'RoadEmissionCalculator')
@@ -147,7 +141,7 @@ class RoadEmissionCalculator:
         # Widget loading overlay
         self.dlg.widgetLoading.setShown(False)
         self.overlay = Overlay(self.dlg.widgetLoading)
-        self.overlay.resize(785,455)
+        self.overlay.resize(785,470)
         self.overlay.hide()
 
         # Road Emission Planner Thread
@@ -319,23 +313,21 @@ class RoadEmissionCalculator:
         self.remove_route_layers()
         self.remove_start_point()
         self.set_new_point(layer_mng.LayerNames.STARTPOINT)
-        # self.dlg.hide()
 
     def add_end_point(self):
         # only one end point can be in canvas/legend
         self.remove_route_layers()
         self.remove_end_point()
         self.set_new_point(layer_mng.LayerNames.ENDPOINT)
-        # self.dlg.hide()
 
     def remove_start_point(self):
-        self.set_planner_none()
+        self.remove_route_layers()
         self.dlg.lineEditStartX.setText("")
         self.dlg.lineEditStartY.setText("")
         self.layer_mng.remove_layer(layer_mng.LayerNames.STARTPOINT)
 
     def remove_end_point(self):
-        self.set_planner_none()
+        self.remove_route_layers()
         self.dlg.lineEditEndX.setText("")
         self.dlg.lineEditEndY.setText("")
         self.layer_mng.remove_layer(layer_mng.LayerNames.ENDPOINT)
@@ -431,7 +423,7 @@ class RoadEmissionCalculator:
                 fig = plt.figure()
                 figs = []
 
-                grafIdx = 0
+                graph_idx = 0
                 active_graphs = 0
 
                 for pt in pollutant_types:
@@ -440,7 +432,7 @@ class RoadEmissionCalculator:
 
                 for pt in pollutant_types:
                     if self.pollutants_checkboxes[pt].isEnabled() and self.pollutants_checkboxes[pt].isChecked():
-                        num_plots = 100 * active_graphs + 10 + grafIdx + 1
+                        num_plots = 100 * active_graphs + 10 + graph_idx + 1
                         ax = fig.add_subplot(num_plots)
                         ax.set_title(pt)
                         if self.dlg.checkBoxCumulative.isChecked():
@@ -456,13 +448,13 @@ class RoadEmissionCalculator:
                         else:
                             ax.set_ylim(0, max(max(x.pollutants[pt] for x in routes)) + 0.2)
                         figs.append(ax)
-                        grafIdx += 1
+                        graph_idx += 1
 
                 for r in routes:
-                    grafIdx = 0
+                    graph_idx = 0
                     for pt in pollutant_types:
                         if self.pollutants_checkboxes[pt].isEnabled() and self.pollutants_checkboxes[pt].isChecked():
-                            ax = figs[grafIdx]
+                            ax = figs[graph_idx]
                             if self.dlg.checkBoxCumulative.isChecked():
                                 cumulative_values = []
                                 cumulative_value = 0
@@ -472,7 +464,7 @@ class RoadEmissionCalculator:
                                 ax.plot(r.distances[0], cumulative_values)
                             else:
                                 ax.plot(r.distances[0], r.pollutants[pt])
-                            grafIdx += 1
+                            graph_idx += 1
 
                 ax = figs[-1]
                 labels = ["Route " + str(i + 1) for i in range(len(routes))]
@@ -548,48 +540,52 @@ class RoadEmissionCalculator:
         myQListWidgetItem.setSizeHint(myQCustomErrorQWidget.sizeHint())
         self.dlg.listWidget.addItem(myQListWidgetItem)
         self.dlg.listWidget.setItemWidget(myQListWidgetItem, myQCustomErrorQWidget)
+        self.planner = None
+
+    def get_selected_category(self):
+        return self.get_object_from_array_by_name(self.vehicle_categories, self.dlg.cmbBoxVehicleType.currentText())
+
+    def get_selected_fuel(self):
+        return self.get_object_from_array_by_name(self.fuels, self.dlg.cmbBoxFuelType.currentText())
+
+    def get_selected_segment(self):
+        return self.get_object_from_array_by_name(self.segments, self.dlg.cmbBoxSegment.currentText())
+
+    def get_selected_euro_std(self):
+        return self.get_object_from_array_by_name(self.euro_stds, self.dlg.cmbBoxEuroStd.currentText())
+
+    def get_selected_mode(self):
+        return self.get_object_from_array_by_name(self.modes, self.dlg.cmbBoxMode.currentText())
 
     def set_categories(self):
         self.vehicle_categories = list(emission.session.query(emission.models.Category).all())
         list_categories = list(map(lambda category: category.name, self.vehicle_categories))
         list_categories.sort()
         self.dlg.cmbBoxVehicleType.addItems(list_categories)
-        self.selected_category = self.get_object_from_array_by_name(self.vehicle_categories,
-                                                                    self.dlg.cmbBoxVehicleType.currentText())
 
     def set_fuels(self):
         self.dlg.cmbBoxFuelType.clear()
-        self.selected_category = self.get_object_from_array_by_name(self.vehicle_categories,
-                                                                    self.dlg.cmbBoxVehicleType.currentText())
-        if len(self.selected_category) > 0:
-            filtred_fuels = list(emission.models.filter_parms(cat=self.selected_category[0]))
+        if self.get_selected_category() is not None:
+            print ("Category: {}".format(self.get_selected_category()))
+            filtred_fuels = list(emission.models.filter_parms(cat=self.get_selected_category()))
             self.fuels = set(x.fuel for x in filtred_fuels)
-            list_fuels = list(map(lambda fuel: fuel.name, self.fuels))
+            list_fuels = (list(map(lambda fuel: fuel.name, self.fuels)))
             list_fuels.sort()
             self.dlg.cmbBoxFuelType.addItems(list_fuels)
 
     def set_segments(self):
         self.dlg.cmbBoxSegment.clear()
-        self.selected_category = self.get_object_from_array_by_name(self.vehicle_categories,
-                                                                    self.dlg.cmbBoxVehicleType.currentText())
-        self.selected_fuel = self.get_object_from_array_by_name(self.fuels, self.dlg.cmbBoxFuelType.currentText())
-        if len(self.selected_category) > 0 and len(self.selected_fuel) > 0:
-            filtred_segments = list(emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0]))
+        if self.get_selected_category() is not None and self.get_selected_fuel() is not None:
+            filtred_segments = list(emission.models.filter_parms(cat=self.get_selected_category(), fuel=self.get_selected_fuel()))
             self.segments = set(x.segment for x in filtred_segments)
             list_segments = list(map(lambda segment: str(segment.name), self.segments))
             list_segments.sort()
             self.dlg.cmbBoxSegment.addItems(list_segments)
-            self.selected_segment = self.get_object_from_array_by_name(self.segments,
-                                                                       self.dlg.cmbBoxSegment.currentText())
 
     def set_euro_std(self):
         self.dlg.cmbBoxEuroStd.clear()
-        self.selected_category = self.get_object_from_array_by_name(self.vehicle_categories,
-                                                                    self.dlg.cmbBoxVehicleType.currentText())
-        self.selected_fuel = self.get_object_from_array_by_name(self.fuels, self.dlg.cmbBoxFuelType.currentText())
-        self.selected_segment = self.get_object_from_array_by_name(self.segments, self.dlg.cmbBoxSegment.currentText())
-        if len(self.selected_category) > 0 and len(self.selected_fuel) > 0 and len(self.selected_segment) > 0:
-            filtred_euro_stds = list(emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0],segment=self.selected_segment[0]))
+        if self.get_selected_category() is not None and self.get_selected_fuel() is not None and self.get_selected_segment() is not None:
+            filtred_euro_stds = list(emission.models.filter_parms(cat=self.get_selected_category(), fuel=self.get_selected_fuel(),segment=self.get_selected_segment()))
             self.euro_stds = set(x.eurostd for x in filtred_euro_stds)
             list_euro_stds = list(map(lambda eurostd: eurostd.name, self.euro_stds))
             list_euro_stds.sort()
@@ -597,15 +593,9 @@ class RoadEmissionCalculator:
 
     def set_mode(self):
         self.dlg.cmbBoxMode.clear()
-        self.selected_category = self.get_object_from_array_by_name(self.vehicle_categories,
-                                                                    self.dlg.cmbBoxVehicleType.currentText())
-        self.selected_fuel = self.get_object_from_array_by_name(self.fuels, self.dlg.cmbBoxFuelType.currentText())
-        self.selected_segment = self.get_object_from_array_by_name(self.segments,
-                                                                   self.dlg.cmbBoxSegment.currentText())
-        self.selected_euro_std = self.get_object_from_array_by_name(self.euro_stds, self.dlg.cmbBoxEuroStd.currentText())
-        if len(self.selected_category) > 0 and len(self.selected_fuel) > 0 and len(self.selected_segment) > 0 and len(self.selected_euro_std) > 0:
-            filtred_modes = list(emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0], segment=self.selected_segment[0],
-                                                             eurostd=self.selected_euro_std[0]))
+        if self.get_selected_category() is not None and self.get_selected_fuel() is not None and self.get_selected_segment() is not None and self.get_selected_euro_std() is not None:
+            filtred_modes = list(emission.models.filter_parms(cat=self.get_selected_category(), fuel=self.get_selected_fuel(), segment=self.get_selected_segment(),
+                                                             eurostd=self.get_selected_euro_std()))
             self.modes = set(x.mode for x in filtred_modes)
             list_modes = list(map(lambda mode: mode.name, self.modes))
             list_modes.sort()
@@ -613,18 +603,10 @@ class RoadEmissionCalculator:
 
     def set_pollutants(self):
         self.disable_all_pollutants()
-        self.selected_category = self.get_object_from_array_by_name(self.vehicle_categories,
-                                                                    self.dlg.cmbBoxVehicleType.currentText())
-        self.selected_fuel = self.get_object_from_array_by_name(self.fuels, self.dlg.cmbBoxFuelType.currentText())
-        self.selected_segment = self.get_object_from_array_by_name(self.segments,
-                                                                   self.dlg.cmbBoxSegment.currentText())
-        self.selected_euro_std = self.get_object_from_array_by_name(self.euro_stds,
-                                                                    self.dlg.cmbBoxEuroStd.currentText())
-        self.selected_mode = self.get_object_from_array_by_name(self.modes, self.dlg.cmbBoxMode.currentText())
-        if len(self.selected_category) > 0 and len(self.selected_fuel) > 0 and len(self.selected_segment) > 0 and len(self.selected_euro_std) > 0 and len(self.selected_mode):
-            filtred_pollutants = list(emission.models.filter_parms(cat=self.selected_category[0], fuel=self.selected_fuel[0],
-                                                              segment=self.selected_segment[0],
-                                                         eurostd=self.selected_euro_std[0], mode=self.selected_mode[0]))
+        if self.get_selected_category() is not None and self.get_selected_fuel() is not None and self.get_selected_segment() is not None and self.get_selected_euro_std() is not None and self.get_selected_mode() is not None:
+            filtred_pollutants = list(emission.models.filter_parms(cat=self.get_selected_category(), fuel=self.get_selected_fuel(),
+                                                              segment=self.get_selected_segment(),
+                                                         eurostd=self.get_selected_euro_std(), mode=self.get_selected_mode()))
             pollutants = list(map(lambda pollutant: pollutant.name, set(x.pollutant for x in filtred_pollutants)))
             self.enable_pollutants(pollutants)
             if self.planner:
@@ -736,12 +718,16 @@ class RoadEmissionCalculator:
             self.dlg.checkBoxCh4.setChecked(settings_data["ch4"])
             self.dlg.checkBoxPmExhaust.setChecked(settings_data["pm"])
 
-
-    def get_object_from_array_by_name(self, array, name):
+    @staticmethod
+    def get_object_from_array_by_name(array, name):
         if len(array) == 0:
-            return []
+            return None
         else:
-            return list(filter(lambda obj: obj.name == name, array))
+            allObjects = list(filter(lambda obj: obj.name == name, array))
+            if len(allObjects) > 0:
+                return allObjects[0]
+            else:
+                return None
 
     def closeEvent(self):
         print("Close event clicked")
