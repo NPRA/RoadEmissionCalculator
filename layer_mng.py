@@ -13,6 +13,8 @@ LayerNames = enum(ROUTE = "Route", SELECTED="Selected_route", STARTPOINT="Start_
 
 
 class LayerMng():
+    '''Layer manager is a class for creating and removing point and polyline layers. Created layers are presented
+    in a map and legend.'''
     def __init__(self, iface):
         self.iface = iface
 

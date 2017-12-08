@@ -31,6 +31,7 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 
 class TheWidgetItem(QtGui.QWidget, FORM_CLASS):
+    """TheWidgetItem is a class which create item for listWidget."""
     def __init__(self, parent=None):
         """Constructor."""
         super(TheWidgetItem, self).__init__(parent)

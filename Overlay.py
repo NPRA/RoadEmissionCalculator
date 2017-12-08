@@ -5,6 +5,7 @@ from PyQt4 import QtGui, uic, QtCore
 
 
 class Overlay(QWidget):
+    '''Overlay is a class which show loading gif.'''
     def __init__(self, parent=None):
 
         QWidget.__init__(self, parent)
