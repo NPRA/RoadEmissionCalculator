@@ -46,29 +46,20 @@ class TheWidgetItem(QtGui.QWidget, FORM_CLASS):
         self.allQHBoxLayout.addLayout(self.textQVBoxLayout)
         self.route_id = -1
         self.setLayout(self.allQHBoxLayout)
-        # self.lblErrorMsg.hide()
         if sys.platform == "linux2":
             for label in self.labels:
                 label.setFont(QtGui.QFont('SansSerif', 10))
 
     def set_route_name(self, text, color):
-        # self.lblErrorMsg.hide()
         self.lblRouteName.setText(text)
         self.lblRouteName.setStyleSheet('color: rgb('+str(color[0])+','+str(color[1])+','+str(color[2])+')')
 
-    def set_route_id(self, id):
-        self.route_id = id
+    def set_route_id(self, route_id):
+        self.route_id = route_id
 
     def set_distance_time(self, distance, time):
         self.lblDistanceTime.show()
         self.lblDistanceTime.setText("Distance: {}, time: {}".format(distance, time))
-
-    # def set_error_msg(self, msg):
-    #     self.lblRouteName.hide()
-    #     self.lblDistanceTime.hide()
-    #     self.hide_all_lbl_pollutants()
-    #     # self.lblErrorMsg.show()
-    #     # self.lblErrorMsg.setText(msg)
 
     def hide_all_lbl_pollutants(self):
         for label in self.labels:

@@ -173,11 +173,6 @@ class RoadEmissionCalculator:
         self.dlg.lineEditLength.setText('12')
         self.dlg.lineEditHeight.setText('4.4')
 
-        buttonBox = QDialogButtonBox(QDialogButtonBox.Close)
-        buttonBox.button(QDialogButtonBox.Close).clicked.connect(self.closeEvent)
-        # buttonBox.accepted.connect(self.closeEvent)
-        # self.dlg.closeButton.connect(self.closeEvent)
-
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
@@ -729,9 +724,6 @@ class RoadEmissionCalculator:
             else:
                 return None
 
-    def closeEvent(self):
-        print("Close event clicked")
-
     def remove_all_memory_layers(self):
         self.remove_start_point()
         self.remove_end_point()
@@ -778,4 +770,5 @@ class RoadEmissionCalculator:
             self.canvas.unsetMapTool(self.mapTool)
         else:
             self.dlg.widgetLoading.setShown(False)
+            self.overlay.hide()
             self.remove_all_memory_layers()

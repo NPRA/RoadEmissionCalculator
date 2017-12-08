@@ -26,5 +26,5 @@ class RoadEmissionPlannerThread(QThread):
             self._run_planner()
             self.plannerFinished.emit()
         except:
-            print "Caught an exception in thread "
+            print ("Caught an exception in thread ")
             self.plannerFinished.emit()
