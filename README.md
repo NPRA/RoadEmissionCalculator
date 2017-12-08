@@ -1,5 +1,5 @@
 #RoadEmissionCalculator
-
+----------------------
 
 This python plugin calculate emissions for selected roads. The plugin using external library "EmissionCalculatorLib". This python library uses formulas and factors from EU to calculate the emission(s) from personal cars, busses to trailers of various sizes give a start and stop point.
 
