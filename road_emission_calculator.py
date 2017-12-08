@@ -350,9 +350,9 @@ class RoadEmissionCalculator:
     def disableUseOfGlobalCrs(self):
         self.s.setValue("/Projections/defaultBehaviour", self.oldValidation)
 
-    """Start calculate emission when click on 'Calculate Emission' button. If planner is not None and 'Show result in 
-        graph' has been checked afterward graph(s) with selected pollutant(s) will be presented."""
     def on_road_emission_planner_start(self):
+        """Start calculate emission when click on 'Calculate Emission' button. If planner is not None and 'Show result in
+                graph' has been checked afterward graph(s) with selected pollutant(s) will be presented."""
         if self.planner:
             self.show_pollutants_in_graph()
         else:
@@ -486,9 +486,9 @@ class RoadEmissionCalculator:
                 return True
         return False
 
-    """ Show selected route from listWidget in map. Selected route will be presented bolder (width=4). 
-     Selected route will be add to the legend on the top of all layers."""
     def select_route(self):
+        """ Show selected route from listWidget in map. Selected route will be presented bolder (width=4).
+             Selected route will be add to the legend on the top of all layers."""
         if self.dlg.listWidget.currentItem():
             route_item = self.dlg.listWidget.itemWidget(self.dlg.listWidget.currentItem())
             if (route_item.route_id == self.selected_route_id):
@@ -571,15 +571,15 @@ class RoadEmissionCalculator:
     def get_selected_mode(self):
         return self.get_object_from_array_by_name(self.modes, self.dlg.cmbBoxMode.currentText())
 
-    """Add vehicle type categories to combo box (cmbBoxVehicleType)"""
     def set_categories(self):
+        """Add vehicle type categories to combo box (cmbBoxVehicleType)"""
         self.vehicle_categories = list(emission.session.query(emission.models.Category).all())
         list_categories = list(map(lambda category: category.name, self.vehicle_categories))
         list_categories.sort()
         self.dlg.cmbBoxVehicleType.addItems(list_categories)
 
-    """Add fuels to combo box (cmbBoxFuelType). Available fuels are filtered by selected vehicle type."""
     def set_fuels(self):
+        """Add fuels to combo box (cmbBoxFuelType). Available fuels are filtered by selected vehicle type."""
         self.dlg.cmbBoxFuelType.clear()
         if self.get_selected_category() is not None:
             print ("Category: {}".format(self.get_selected_category()))
@@ -589,9 +589,9 @@ class RoadEmissionCalculator:
             list_fuels.sort()
             self.dlg.cmbBoxFuelType.addItems(list_fuels)
 
-    """Add segments to combo box (cmbBoxSegment). Available segments are filtered by selected vehicle type
-    and fuel."""
     def set_segments(self):
+        """Add segments to combo box (cmbBoxSegment). Available segments are filtered by selected vehicle type
+           and fuel."""
         self.dlg.cmbBoxSegment.clear()
         if self.get_selected_category() is not None and self.get_selected_fuel() is not None:
             filtred_segments = list(emission.models.filter_parms(cat=self.get_selected_category(), fuel=self.get_selected_fuel()))
@@ -600,9 +600,9 @@ class RoadEmissionCalculator:
             list_segments.sort()
             self.dlg.cmbBoxSegment.addItems(list_segments)
 
-    """Add euro standards to combo box (cmbBoxEuroStd). Available euro standards are filtered by selected vehicle type,
-    fuel and segment."""
     def set_euro_std(self):
+        """Add euro standards to combo box (cmbBoxEuroStd). Available euro standards are filtered by selected vehicle type,
+           fuel and segment."""
         self.dlg.cmbBoxEuroStd.clear()
         if self.get_selected_category() is not None and self.get_selected_fuel() is not None and self.get_selected_segment() is not None:
             filtred_euro_stds = list(emission.models.filter_parms(cat=self.get_selected_category(), fuel=self.get_selected_fuel(),segment=self.get_selected_segment()))
@@ -611,9 +611,9 @@ class RoadEmissionCalculator:
             list_euro_stds.sort()
             self.dlg.cmbBoxEuroStd.addItems(list_euro_stds)
 
-    """Add modes to combo box (cmbBoxMode). Available modes are filtered by selected vehicle type,
-        fuel, segment and euro standard."""
     def set_mode(self):
+        """Add modes to combo box (cmbBoxMode). Available modes are filtered by selected vehicle type,
+               fuel, segment and euro standard."""
         self.dlg.cmbBoxMode.clear()
         if self.get_selected_category() is not None and self.get_selected_fuel() is not None and self.get_selected_segment() is not None and self.get_selected_euro_std() is not None:
             filtred_modes = list(emission.models.filter_parms(cat=self.get_selected_category(), fuel=self.get_selected_fuel(), segment=self.get_selected_segment(),
@@ -623,9 +623,9 @@ class RoadEmissionCalculator:
             list_modes.sort()
             self.dlg.cmbBoxMode.addItems(list_modes)
 
-    """Enable pollutant checkboxes. Available pollutants are filtered by selected vehicle type,
-           fuel, segment, euro standard and mode."""
     def set_pollutants(self):
+        """Enable pollutant checkboxes. Available pollutants are filtered by selected vehicle type,
+                   fuel, segment, euro standard and mode."""
         self.disable_all_pollutants()
         if self.get_selected_category() is not None and self.get_selected_fuel() is not None and self.get_selected_segment() is not None and self.get_selected_euro_std() is not None and self.get_selected_mode() is not None:
             filtred_pollutants = list(emission.models.filter_parms(cat=self.get_selected_category(), fuel=self.get_selected_fuel(),
@@ -673,10 +673,10 @@ class RoadEmissionCalculator:
         for x in self.pollutants_checkboxes.values():
             x.setChecked(False)
 
-    """Save settings when click on the 'Save settings' button. This option will generate json file 
-    in plugin directory - settings.json. 'Settings.json' will include parameters as 'Route parameters', 
-    'Set vehicle type' and 'Show results in graph'."""
     def save_settings(self):
+        """Save settings when click on the 'Save settings' button. This option will generate json file
+            in plugin directory - settings.json. 'Settings.json' will include parameters as 'Route parameters',
+            'Set vehicle type' and 'Show results in graph'."""
         settings = {
             "startPoint": [self.dlg.lineEditStartX.text(), self.dlg.lineEditStartY.text()],
             "endPoint": [self.dlg.lineEditEndX.text(), self.dlg.lineEditEndY.text()],
@@ -702,9 +702,9 @@ class RoadEmissionCalculator:
         with open(plugin_path + "/settings.json", "w") as outfile:
             json.dump(settings, outfile)
 
-    """If settings.json is available in plugin directory parameters for 'Route parameters', 'Set vehicle type', 
-    'Show results in graph' will be updated."""
     def load_settings(self):
+        """If settings.json is available in plugin directory parameters for 'Route parameters', 'Set vehicle type',
+            'Show results in graph' will be updated."""
         self.remove_all_memory_layers()
         self.dlg.listWidget.clear()
         settings_json_file = os.path.join(os.path.dirname(__file__), 'settings.json')
@@ -761,17 +761,17 @@ class RoadEmissionCalculator:
             else:
                 return None
 
-    """Remove all generated routes, selected route, start route(s) point and end route(s) point. Layers are 
-    remove from map and legend."""
     def remove_all_memory_layers(self):
+        """Remove all generated routes, selected route, start route(s) point and end route(s) point. Layers are
+            remove from map and legend."""
         self.remove_start_point()
         self.remove_end_point()
         self.layer_mng.remove_layer(layer_mng.LayerNames.SELECTED)
         self.layer_mng.remove_layer(layer_mng.LayerNames.ROUTE)
         self.set_planner_none()
 
-    """Remove selected route and all generated routes from map and legend."""
     def remove_route_layers(self):
+        """Remove selected route and all generated routes from map and legend."""
         self.layer_mng.remove_layer(layer_mng.LayerNames.SELECTED)
         self.layer_mng.remove_layer(layer_mng.LayerNames.ROUTE)
         self.set_planner_none()
