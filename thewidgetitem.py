@@ -49,6 +49,9 @@ class TheWidgetItem(QtGui.QWidget, FORM_CLASS):
         if sys.platform == "linux2":
             for label in self.labels:
                 label.setFont(QtGui.QFont('SansSerif', 10))
+        if sys.platform == "win32":
+            for label in self.labels:
+                label.setFont(QtGui.QFont('Arial', 9))
 
     def set_route_name(self, text, color):
         self.lblRouteName.setText(text)
