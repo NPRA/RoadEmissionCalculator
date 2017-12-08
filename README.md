@@ -26,4 +26,4 @@ The plugin has been build with [Plugin Builder](http://g-sherman.github.io/Qgis-
 
 Plugin using external libraries:
 + EmissionCalculatorLib, fork on GitHub:[https://github.com/NPRA/EmissionCalculatorLib](https://github.com/NPRA/EmissionCalculatorLib)
-+ Lat Lon Tools Plugin, for on GitHub: [https://github.com/NationalSecurityAgency/qgis-latlontools-plugin/#readme](https://github.com/NationalSecurityAgency/qgis-latlontools-plugin/)
++ Lat Lon Tools Plugin, fork on GitHub: [https://github.com/NationalSecurityAgency/qgis-latlontools-plugin](https://github.com/NationalSecurityAgency/qgis-latlontools-plugin/)
