@@ -8,7 +8,7 @@
 
 [general]
 name=Road Emission Calculator
-qgisMinimumVersion=2.0
+qgisMinimumVersion=3.0
 description=The plugin calculate emissions for selected roads. The plugin using external library "EmissionCalculatorLib". This python library uses formulas and factors from EU to calculate the emission(s) from personal cars, busses to trailers of various sizes give a start and stop point.
 version=0.2
 author=Statens Vegvesen, Juraj Cirbus
