@@ -3,7 +3,7 @@ from builtins import range
 from builtins import object
 from qgis.PyQt.QtCore import QVariant
 from qgis.PyQt.QtGui import QColor
-from qgis.core import QgsPoint
+from qgis.core import QgsPointXY
 from qgis.core import QgsVectorLayer, QgsField, QgsFeature, QgsGeometry
 from qgis.core import QgsProject
 
@@ -25,8 +25,9 @@ class LayerMng(object):
     def create_layer(self, points, layer_name, type_geometry, style_width, layer_id, color_list):
         # get default CRS
         canvas = self.iface.mapCanvas()
-        mapRenderer = canvas.mapRenderer()
-        srs = mapRenderer.destinationCrs()
+        # mapRenderer = canvas.mapRenderer()
+        map_settings = canvas.mapSettings()
+        srs = map_settings.destinationCrs()
         # create an empty memory layer
         if layer_id != None:
             vl = QgsVectorLayer(type_geometry + "?crs=" + srs.authid(), layer_name + str(layer_id + 1), "memory")
@@ -44,11 +45,11 @@ class LayerMng(object):
 
             for i in range(len(points)):
                 if (i + 1) < len(points):
-                    line_points.append(QgsPoint(points[i][0], points[i][1]))
+                    line_points.append(QgsPointXY(points[i][0], points[i][1]))
             # set the geometry defined from the point
             ft.setGeometry(QgsGeometry.fromPolyline(line_points))
         else:
-            ft.setGeometry(QgsGeometry.fromPoint(QgsPoint(points[0], points[1])))
+            ft.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(points[0], points[1])))
         # finally insert the feature
         provider.addFeatures([ft])
 
@@ -69,7 +70,8 @@ class LayerMng(object):
 
     @staticmethod
     def remove_layer(layer_name):
-        lrs = QgsMapLayerRegistry.instance().mapLayers()
+        # lrs = QgsMapLayerRegistry.instance().mapLayers()
+        lrs = QgsProject.instance().mapLayers()
         for i in range(len(list(lrs.keys()))):
             if layer_name in list(lrs.keys())[i]:
-                QgsMapLayerRegistry.instance().removeMapLayer(list(lrs.keys())[i])
+                QgsProject.instance().removeMapLayer(list(lrs.keys())[i])
