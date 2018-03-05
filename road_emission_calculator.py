@@ -148,7 +148,7 @@ class RoadEmissionCalculator(object):
         self.dlg.lineEditLength.textChanged.connect(self.remove_route_layers)
 
         # Widget loading overlay
-        self.dlg.widgetLoading.setShown(False)
+        self.dlg.widgetLoading.setVisible(False)
         self.overlay = Overlay(self.dlg.widgetLoading)
         self.overlay.resize(785,470)
         self.overlay.hide()
@@ -400,7 +400,7 @@ class RoadEmissionCalculator(object):
                     self.planner.add_pollutant(x)
 
             self.dlg.listWidget.clear()
-            self.dlg.widgetLoading.setShown(True)
+            self.dlg.widgetLoading.setVisible(True)
             self.overlay.show()
             self.road_emission_planner_thread.set_planner(self.planner)
             self.road_emission_planner_thread.start()
@@ -409,7 +409,7 @@ class RoadEmissionCalculator(object):
     def on_road_emission_planner_finished(self):
         self.overlay.hide()
         self.layer_mng.remove_layer(layer_mng.LayerNames.ROUTE)
-        self.dlg.widgetLoading.setShown(False)
+        self.dlg.widgetLoading.setVisible(False)
         if 'routes' in self.planner._json_data:
             self.show_roads()
         else:
@@ -818,6 +818,6 @@ class RoadEmissionCalculator(object):
             # substitute with your code.
             self.canvas.unsetMapTool(self.mapTool)
         else:
-            self.dlg.widgetLoading.setShown(False)
+            self.dlg.widgetLoading.setVisible(False)
             self.overlay.hide()
             self.remove_all_memory_layers()
