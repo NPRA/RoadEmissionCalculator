@@ -7,6 +7,7 @@
      (at your option) any later version.
 
 """
+from __future__ import absolute_import
 
 __author__ = 'tomas.levin@vegvesen.no'
 __date__ = '2017-08-08'
@@ -14,11 +15,11 @@ __copyright__ = 'Copyright 2017, Statens Vegvesen'
 
 import unittest
 
-from PyQt4.QtGui import QDialogButtonBox, QDialog
+from qgis.PyQt.QtWidgets import QDialogButtonBox, QDialog
 
 from road_emission_calculator_dialog import RoadEmissionCalculatorDialog
 
-from utilities import get_qgis_app
+from .utilities import get_qgis_app
 QGIS_APP = get_qgis_app()
 
 

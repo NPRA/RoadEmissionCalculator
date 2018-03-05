@@ -1,7 +1,9 @@
+from builtins import str
+from builtins import object
 import sys, math, re, string
 from qgis.core import QgsPoint
 
-class LatLon():
+class LatLon(object):
     '''LatLon is a class of useful functions to do conversions handle
     other coordinate functions.'''
     def __init__(self):

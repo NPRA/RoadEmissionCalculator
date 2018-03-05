@@ -14,7 +14,7 @@ __copyright__ = 'Copyright 2017, Statens Vegvesen'
 
 import unittest
 
-from PyQt4.QtGui import QIcon
+from qgis.PyQt.QtGui import QIcon
 
 
 

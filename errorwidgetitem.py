@@ -22,13 +22,14 @@
 """
 
 import os
-from PyQt4 import QtGui, uic
+from qgis.PyQt import QtGui, uic
+from qgis.PyQt.QtWidgets import QWidget
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'errorwidgetitem.ui'))
 
 
-class ErrorWidgetItem(QtGui.QWidget, FORM_CLASS):
+class ErrorWidgetItem(QWidget, FORM_CLASS):
     def __init__(self, parent=None):
         """Constructor."""
         super(ErrorWidgetItem, self).__init__(parent)

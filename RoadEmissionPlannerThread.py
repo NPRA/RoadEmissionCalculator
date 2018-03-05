@@ -1,5 +1,8 @@
-from PyQt4.QtCore import *
+from __future__ import print_function
+# from PyQt4.QtCore import *
+from qgis.PyQt.QtCore import QThread, pyqtSignal
 from emission.exceptions import RouteError
+
 
 class RoadEmissionPlannerThread(QThread):
     plannerFinished = pyqtSignal()

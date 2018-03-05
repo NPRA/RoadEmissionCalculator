@@ -1,13 +1,17 @@
-from PyQt4.QtCore import Qt, pyqtSignal, QVariant, QSettings
-from PyQt4.QtGui import QApplication, QAction
+from __future__ import absolute_import
+from builtins import str
+from qgis.PyQt.QtCore import Qt, pyqtSignal, QVariant, QSettings
+from qgis.PyQt.QtWidgets import QApplication, QAction
 from qgis.core import QgsCoordinateTransform, QgsPoint
 from qgis.gui import QgsMapTool, QgsMessageBar
-from qgis.core import QgsVectorLayer, QgsField, QgsMapLayerRegistry, QgsFeature, QgsGeometry
+# from qgis.core import QgsVectorLayer, QgsField, QgsMapLayerRegistry, QgsFeature, QgsGeometry
+# from qgis.core import QgsProject
+from qgis.core import QgsVectorLayer, QgsField, QgsFeature, QgsGeometry
 from qgis.gui import QgsMapToolPan
 
-from LatLon import LatLon
-from layer_mng import LayerMng
-import mgrs
+from .LatLon import LatLon
+from .layer_mng import LayerMng
+from . import mgrs
 
 class CopyLatLonTool(QgsMapTool):
     '''Class to interact with the map canvas to capture the coordinate
