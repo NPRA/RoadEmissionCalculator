@@ -3,6 +3,7 @@ import math
 # from qgis.PyQt.QtCore import Qt, QTimer
 from qgis.PyQt.QtGui import QPalette, QPainter, QBrush, QColor, QPen
 from qgis.PyQt.QtWidgets import QWidget
+from qgis.PyQt.QtCore import Qt
 # from qgis.PyQt import QtGui, uic, QtCore
 
 
