@@ -20,17 +20,19 @@
  *                                                                         *
  ***************************************************************************/
 """
+from builtins import str
 
 import os
 import sys
 
-from PyQt4 import QtGui, uic, QtCore
+from qgis.PyQt import QtGui, uic
+from qgis.PyQt.QtWidgets import QWidget
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'thewidgetitem.ui'))
 
 
-class TheWidgetItem(QtGui.QWidget, FORM_CLASS):
+class TheWidgetItem(QWidget, FORM_CLASS):
     """TheWidgetItem is a class which create item for listWidget."""
     def __init__(self, parent=None):
         """Constructor."""

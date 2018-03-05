@@ -20,19 +20,27 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt, QVariant, QObject
-from PyQt4.QtGui import QAction, QIcon, QColor, QWidget, QListWidget, QListWidgetItem, QDialogButtonBox
-from qgis.core import QGis, QgsCoordinateTransform, QgsRectangle, QgsPoint, QgsGeometry, QgsCoordinateReferenceSystem
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
+from builtins import object
+from qgis.PyQt.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt, QVariant, QObject
+from qgis.PyQt.QtWidgets import QAction, QWidget, QListWidget, QListWidgetItem, QDialogButtonBox
+from qgis.PyQt.QtGui import QIcon, QColor
+# from qgis.core import QGis
+from qgis.core import QgsWkbTypes
+from qgis.core import QgsCoordinateTransform, QgsRectangle, QgsPoint, QgsGeometry, QgsCoordinateReferenceSystem
 from qgis.gui import QgsRubberBand
-from Overlay import Overlay
+from .Overlay import Overlay
 
-from copyLatLonTool import CopyLatLonTool
-from settings import SettingsWidget
+from .copyLatLonTool import CopyLatLonTool
+from .settings import SettingsWidget
 import pip
 import os.path
 
-from thewidgetitem import TheWidgetItem
-from errorwidgetitem import ErrorWidgetItem
+from .thewidgetitem import TheWidgetItem
+from .errorwidgetitem import ErrorWidgetItem
 import json
 import sys
 
@@ -46,9 +54,9 @@ if lib_dir not in sys.path:
 import emission
 
 try:
-    from RoadEmissionPlannerThread import RoadEmissionPlannerThread
+    from .RoadEmissionPlannerThread import RoadEmissionPlannerThread
 except:
-    from RoadEmissionPlannerThread import RoadEmissionPlannerThread
+    from .RoadEmissionPlannerThread import RoadEmissionPlannerThread
 
 
 try:
@@ -62,13 +70,13 @@ except:
 
 # from PyQt4.QtCore import *
 # Initialize Qt resources from file resources.py
-import resources
+from . import resources
 # Import the code for the dialog
-from road_emission_calculator_dialog import RoadEmissionCalculatorDialog
-from layer_mng import LayerMng
-import layer_mng
+from .road_emission_calculator_dialog import RoadEmissionCalculatorDialog
+from .layer_mng import LayerMng
+from . import layer_mng
 
-class RoadEmissionCalculator:
+class RoadEmissionCalculator(object):
     """QGIS Plugin Implementation."""
 
     def __init__(self, iface):
@@ -82,7 +90,8 @@ class RoadEmissionCalculator:
         # Save reference to the QGIS interface
         self.iface = iface
         self.canvas = iface.mapCanvas()
-        self.crossRb = QgsRubberBand(self.canvas, QGis.Line)
+        # self.crossRb = QgsRubberBand(self.canvas, QGis.Line)
+        self.crossRb = QgsRubberBand(self.canvas, QgsWkbTypes.LineGeometry)
         self.crossRb.setColor(Qt.red)
         self.planner = None
         # initialize plugin directory
@@ -411,7 +420,7 @@ class RoadEmissionCalculator:
         self.planner._calculate_emissions()
         self.dlg.cmbBoxSortBy.clear()
         routes = self.planner.routes
-        pollutant_types = self.planner.pollutants.keys()
+        pollutant_types = list(self.planner.pollutants.keys())
         if len(routes) > 0:
             self.dlg.cmbBoxSortBy.addItem("Distance")
             self.dlg.cmbBoxSortBy.addItem("Time")
@@ -425,7 +434,7 @@ class RoadEmissionCalculator:
     def show_pollutants_in_graph(self):
         if self.planner:
             routes = self.planner.routes
-            pollutant_types = self.planner.pollutants.keys()
+            pollutant_types = list(self.planner.pollutants.keys())
             if self.dlg.checkBoxShowInGraph.isChecked() and self.any_pollutant_checked(pollutant_types):
                 fig = plt.figure()
                 figs = []
@@ -522,7 +531,7 @@ class RoadEmissionCalculator:
 
     # Add route as a item to list (listWidget)
     def add_route_item_to_list_widget(self, route):
-        pollutant_types = self.planner.pollutants.keys()
+        pollutant_types = list(self.planner.pollutants.keys())
         distance = route.distance / 1000
         hours, minutes = divmod(route.minutes, 60)
         hours = int(hours)
@@ -574,7 +583,7 @@ class RoadEmissionCalculator:
     def set_categories(self):
         """Add vehicle type categories to combo box (cmbBoxVehicleType)"""
         self.vehicle_categories = list(emission.session.query(emission.models.Category).all())
-        list_categories = list(map(lambda category: category.name, self.vehicle_categories))
+        list_categories = list([category.name for category in self.vehicle_categories])
         list_categories.sort()
         self.dlg.cmbBoxVehicleType.addItems(list_categories)
 
@@ -585,7 +594,7 @@ class RoadEmissionCalculator:
             print ("Category: {}".format(self.get_selected_category()))
             filtred_fuels = list(emission.models.filter_parms(cat=self.get_selected_category()))
             self.fuels = set(x.fuel for x in filtred_fuels)
-            list_fuels = (list(map(lambda fuel: fuel.name, self.fuels)))
+            list_fuels = (list([fuel.name for fuel in self.fuels]))
             list_fuels.sort()
             self.dlg.cmbBoxFuelType.addItems(list_fuels)
 
@@ -596,7 +605,7 @@ class RoadEmissionCalculator:
         if self.get_selected_category() is not None and self.get_selected_fuel() is not None:
             filtred_segments = list(emission.models.filter_parms(cat=self.get_selected_category(), fuel=self.get_selected_fuel()))
             self.segments = set(x.segment for x in filtred_segments)
-            list_segments = list(map(lambda segment: str(segment.name), self.segments))
+            list_segments = list([str(segment.name) for segment in self.segments])
             list_segments.sort()
             self.dlg.cmbBoxSegment.addItems(list_segments)
 
@@ -607,7 +616,7 @@ class RoadEmissionCalculator:
         if self.get_selected_category() is not None and self.get_selected_fuel() is not None and self.get_selected_segment() is not None:
             filtred_euro_stds = list(emission.models.filter_parms(cat=self.get_selected_category(), fuel=self.get_selected_fuel(),segment=self.get_selected_segment()))
             self.euro_stds = set(x.eurostd for x in filtred_euro_stds)
-            list_euro_stds = list(map(lambda eurostd: eurostd.name, self.euro_stds))
+            list_euro_stds = list([eurostd.name for eurostd in self.euro_stds])
             list_euro_stds.sort()
             self.dlg.cmbBoxEuroStd.addItems(list_euro_stds)
 
@@ -619,7 +628,7 @@ class RoadEmissionCalculator:
             filtred_modes = list(emission.models.filter_parms(cat=self.get_selected_category(), fuel=self.get_selected_fuel(), segment=self.get_selected_segment(),
                                                              eurostd=self.get_selected_euro_std()))
             self.modes = set(x.mode for x in filtred_modes)
-            list_modes = list(map(lambda mode: mode.name, self.modes))
+            list_modes = list([mode.name for mode in self.modes])
             list_modes.sort()
             self.dlg.cmbBoxMode.addItems(list_modes)
 
@@ -631,7 +640,7 @@ class RoadEmissionCalculator:
             filtred_pollutants = list(emission.models.filter_parms(cat=self.get_selected_category(), fuel=self.get_selected_fuel(),
                                                               segment=self.get_selected_segment(),
                                                          eurostd=self.get_selected_euro_std(), mode=self.get_selected_mode()))
-            pollutants = list(map(lambda pollutant: pollutant.name, set(x.pollutant for x in filtred_pollutants)))
+            pollutants = list([pollutant.name for pollutant in set(x.pollutant for x in filtred_pollutants)])
             self.enable_pollutants(pollutants)
             if self.planner:
                 type_category = emission.vehicles.Vehicle.get_type_for_category(
@@ -665,12 +674,12 @@ class RoadEmissionCalculator:
 
     # Disable all pollutant checkboxes
     def disable_all_pollutants(self):
-        for x in self.pollutants_checkboxes.values():
+        for x in list(self.pollutants_checkboxes.values()):
             x.setEnabled(False)
 
     # Uncheck all pollutant checkboxes
     def uncheck_all_pollutants(self):
-        for x in self.pollutants_checkboxes.values():
+        for x in list(self.pollutants_checkboxes.values()):
             x.setChecked(False)
 
     def save_settings(self):
@@ -755,7 +764,7 @@ class RoadEmissionCalculator:
         if len(array) == 0:
             return None
         else:
-            allObjects = list(filter(lambda obj: obj.name == name, array))
+            allObjects = list([obj for obj in array if obj.name == name])
             if len(allObjects) > 0:
                 return allObjects[0]
             else:

@@ -1,11 +1,14 @@
-import math, sys
-from PyQt4.QtCore import Qt, QTimer
-from PyQt4.QtGui import *
-from PyQt4 import QtGui, uic, QtCore
+from builtins import range
+import math
+# from qgis.PyQt.QtCore import Qt, QTimer
+from qgis.PyQt.QtGui import QPalette, QPainter, QBrush, QColor, QPen
+from qgis.PyQt.QtWidgets import QWidget
+# from qgis.PyQt import QtGui, uic, QtCore
 
 
 class Overlay(QWidget):
     '''Overlay is a class which show loading gif.'''
+
     def __init__(self, parent=None):
 
         QWidget.__init__(self, parent)

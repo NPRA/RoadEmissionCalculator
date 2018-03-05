@@ -1,7 +1,11 @@
-from PyQt4.QtCore import QVariant
-from PyQt4.QtGui import QColor
+from builtins import str
+from builtins import range
+from builtins import object
+from qgis.PyQt.QtCore import QVariant
+from qgis.PyQt.QtGui import QColor
 from qgis.core import QgsPoint
-from qgis.core import QgsVectorLayer, QgsField, QgsMapLayerRegistry, QgsFeature, QgsGeometry
+from qgis.core import QgsVectorLayer, QgsField, QgsFeature, QgsGeometry
+from qgis.core import QgsProject
 
 
 def enum(**named_values):
@@ -12,7 +16,7 @@ GeometryTypes = enum(POINT="Point", LINE="LineString")
 LayerNames = enum(ROUTE = "Route", SELECTED="Selected_route", STARTPOINT="Start_point", ENDPOINT="End_point")
 
 
-class LayerMng():
+class LayerMng(object):
     '''Layer manager is a class for creating and removing point and polyline layers. Created layers are presented
     in a map and legend.'''
     def __init__(self, iface):
@@ -60,11 +64,12 @@ class LayerMng():
             sym.setWidth(style_width)
 
         # add layer to the registry and over the map canvas
-        QgsMapLayerRegistry.instance().addMapLayer(vl)
+        # QgsMapLayerRegistry.instance().addMapLayer(vl)
+        QgsProject.instance().addMapLayer(vl)
 
     @staticmethod
     def remove_layer(layer_name):
         lrs = QgsMapLayerRegistry.instance().mapLayers()
-        for i in range(len(lrs.keys())):
-            if layer_name in lrs.keys()[i]:
-                QgsMapLayerRegistry.instance().removeMapLayer(lrs.keys()[i])
+        for i in range(len(list(lrs.keys()))):
+            if layer_name in list(lrs.keys())[i]:
+                QgsMapLayerRegistry.instance().removeMapLayer(list(lrs.keys())[i])
