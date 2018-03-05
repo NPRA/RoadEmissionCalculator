@@ -23,13 +23,14 @@
 
 import os
 
-from qgis.PyQt import QtGui, uic, QtCore
+from qgis.PyQt import uic, QtCore
+from qgis.PyQt.QtWidgets import QDialog
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'road_emission_calculator_dialog_base.ui'))
 
 
-class RoadEmissionCalculatorDialog(QtGui.QDialog, FORM_CLASS):
+class RoadEmissionCalculatorDialog(QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         """Constructor."""
         super(RoadEmissionCalculatorDialog, self).__init__(parent)
