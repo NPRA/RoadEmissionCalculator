@@ -37,7 +37,6 @@ from .WaitingSpinnerWidget import QtWaitingSpinner
 
 from .copyLatLonTool import CopyLatLonTool
 from .settings import SettingsWidget
-from .executor import execute
 import pip
 import os.path
 
