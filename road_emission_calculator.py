@@ -382,7 +382,7 @@ class RoadEmissionCalculator(object):
                     vehicle = emission.vehicles.Truck()
                 vehicle.length = self.dlg.lineEditLength.text()
                 vehicle.height = self.dlg.lineEditHeight.text()
-                vehicle.load = self.dlg.cmbBoxLoad.currentText()
+                vehicle.load = float(self.dlg.cmbBoxLoad.currentText())
             if type_category == emission.vehicles.VehicleTypes.LCATEGORY:
                 vehicle = emission.vehicles.LCategory()
             if type_category == emission.vehicles.VehicleTypes.VAN:
@@ -410,6 +410,9 @@ class RoadEmissionCalculator(object):
         self.overlay.hide()
         self.layer_mng.remove_layer(layer_mng.LayerNames.ROUTE)
         self.dlg.widgetLoading.setVisible(False)
+        if not hasattr(self.planner, '_json_data'):
+            self.add_error_to_list_widget("Missing JSON data from web service.")
+
         if 'routes' in self.planner._json_data:
             self.show_roads()
         else:
