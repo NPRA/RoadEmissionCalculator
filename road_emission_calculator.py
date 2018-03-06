@@ -33,9 +33,11 @@ from qgis.core import QgsWkbTypes
 from qgis.core import QgsCoordinateTransform, QgsRectangle, QgsPoint, QgsGeometry, QgsCoordinateReferenceSystem
 from qgis.gui import QgsRubberBand
 from .Overlay import Overlay
+from .WaitingSpinnerWidget import QtWaitingSpinner
 
 from .copyLatLonTool import CopyLatLonTool
 from .settings import SettingsWidget
+from .executor import execute
 import pip
 import os.path
 
@@ -75,6 +77,7 @@ from . import resources
 from .road_emission_calculator_dialog import RoadEmissionCalculatorDialog
 from .layer_mng import LayerMng
 from . import layer_mng
+
 
 class RoadEmissionCalculator(object):
     """QGIS Plugin Implementation."""
@@ -149,9 +152,10 @@ class RoadEmissionCalculator(object):
 
         # Widget loading overlay
         self.dlg.widgetLoading.setVisible(False)
-        self.overlay = Overlay(self.dlg.widgetLoading)
-        self.overlay.resize(785,470)
-        self.overlay.hide()
+        self.overlay = QtWaitingSpinner(parent=self.dlg.widgetLoading)
+        #self.overlay = Overlay(self.dlg.widgetLoading)
+        # self.overlay.resize(785, 470)
+        #self.overlay.hide()
 
         # Road Emission Planner Thread
         self.road_emission_planner_thread = RoadEmissionPlannerThread()
@@ -362,6 +366,7 @@ class RoadEmissionCalculator(object):
     def on_road_emission_planner_start(self):
         """Start calculate emission when click on 'Calculate Emission' button. If planner is not None and 'Show result in
                 graph' has been checked afterward graph(s) with selected pollutant(s) will be presented."""
+
         if self.planner:
             self.show_pollutants_in_graph()
         else:
@@ -401,26 +406,32 @@ class RoadEmissionCalculator(object):
 
             self.dlg.listWidget.clear()
             self.dlg.widgetLoading.setVisible(True)
-            self.overlay.show()
+            self.overlay.start()
+
+            # Add planner and start QThread
             self.road_emission_planner_thread.set_planner(self.planner)
             self.road_emission_planner_thread.start()
 
     # RoadEmissionPlanner finished emission calculation
-    def on_road_emission_planner_finished(self):
-        self.overlay.hide()
+    def on_road_emission_planner_finished(self, err=None):
         self.layer_mng.remove_layer(layer_mng.LayerNames.ROUTE)
-        self.dlg.widgetLoading.setVisible(False)
+
         if not hasattr(self.planner, '_json_data'):
             self.add_error_to_list_widget("Missing JSON data from web service.")
 
         if 'routes' in self.planner._json_data:
             self.show_roads()
+            # val = execute(self.iface, self.show_roads)
+            # print("return val: {}".format(val))
         else:
             self.add_error_to_list_widget("Unable to get a good response from web service.")
 
+        self.overlay.stop()
+        self.dlg.widgetLoading.setVisible(False)
+
     # Present roads in map and possibly show results in graph(s)
     def show_roads(self):
-        self.planner._calculate_emissions()
+        # self.planner._calculate_emissions()
         self.dlg.cmbBoxSortBy.clear()
         routes = self.planner.routes
         pollutant_types = list(self.planner.pollutants.keys())
@@ -719,6 +730,7 @@ class RoadEmissionCalculator(object):
             'Show results in graph' will be updated."""
         self.remove_all_memory_layers()
         self.dlg.listWidget.clear()
+
         settings_json_file = os.path.join(os.path.dirname(__file__), 'settings.json')
         if os.path.isfile(settings_json_file):
             settings_data = json.load(open(settings_json_file))
@@ -761,6 +773,10 @@ class RoadEmissionCalculator(object):
             self.dlg.checkBoxVoc.setChecked(settings_data["voc"])
             self.dlg.checkBoxCh4.setChecked(settings_data["ch4"])
             self.dlg.checkBoxPmExhaust.setChecked(settings_data["pm"])
+
+        # from qgis.PyQt.QtCore import QTimer
+        # self.dlg.widgetLoading.setVisible(False)
+        # QTimer.singleShot(4000, self.overlay.stop)
 
     @staticmethod
     def get_object_from_array_by_name(array, name):
