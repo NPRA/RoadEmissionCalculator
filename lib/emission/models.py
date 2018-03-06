@@ -17,7 +17,7 @@ Base = declarative_base()
 metadata = Base.metadata
 
 # Create the engine connected to the sqlite db
-db_engine = create_engine('sqlite:///{}'.format(sqlite_full_path))
+db_engine = create_engine('sqlite:///{}'.format(sqlite_full_path), connect_args={'check_same_thread': False})
 
 # Create the 'Session' class binded with the db engine
 Session = scoped_session(sessionmaker(bind=db_engine))
