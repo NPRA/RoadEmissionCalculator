@@ -21,13 +21,18 @@ class RoadEmissionPlannerThread(QThread):
             print ("ioerror: {}".format(err))
             self._json_data = {}
             raise RouteError("IOError: {}".format(err))
-        # except Exception:
-        #     print
+        except Exception as e:
+            import traceback
+            import sys
+            traceback.print_exc(file=sys.stdout)
+            print("Planner failed....")
+            print(" exception: {}".format(e))
 
     def run(self):
         try:
             self._run_planner()
+            self.emission_planner._calculate_emissions()
             self.plannerFinished.emit()
-        except:
+        except Exception as err:
             print ("Caught an exception in thread ")
-            self.plannerFinished.emit()
+            self.plannerFinished.emit(err)
