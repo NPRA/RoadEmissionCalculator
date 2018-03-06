@@ -25,8 +25,8 @@ from __future__ import absolute_import
 from builtins import str
 from builtins import range
 from builtins import object
-from qgis.PyQt.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt, QVariant, QObject
-from qgis.PyQt.QtWidgets import QAction, QWidget, QListWidget, QListWidgetItem, QDialogButtonBox
+from qgis.PyQt.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt
+from qgis.PyQt.QtWidgets import QAction, QListWidgetItem
 from qgis.PyQt.QtGui import QIcon, QColor
 # from qgis.core import QGis
 from qgis.core import QgsWkbTypes
