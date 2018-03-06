@@ -1,13 +1,9 @@
 from __future__ import absolute_import
 from builtins import str
-from qgis.PyQt.QtCore import Qt, pyqtSignal, QVariant, QSettings
-from qgis.PyQt.QtWidgets import QApplication, QAction
+
+from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.core import QgsCoordinateTransform, QgsPoint, Qgis
-from qgis.gui import QgsMapTool, QgsMessageBar
-# from qgis.core import QgsVectorLayer, QgsField, QgsMapLayerRegistry, QgsFeature, QgsGeometry
-# from qgis.core import QgsProject
-from qgis.core import QgsVectorLayer, QgsField, QgsFeature, QgsGeometry
-from qgis.gui import QgsMapToolPan
+from qgis.gui import QgsMapTool
 
 from .LatLon import LatLon
 from .layer_mng import LayerMng
@@ -172,8 +168,6 @@ class CopyLatLonTool(QgsMapTool):
             self.canvas.unsetMapTool(self)
             # self.canvas.setCursor(Qt.ArrowCursor)
             self.iface.actionPan().trigger()
-            # self.dlg.exec_()
 
         except Exception as e:
-            # self.iface.messageBar().pushMessage("", "Invalid coordinate: {}".format(e), level=QgsMessageBar.WARNING, duration=4)
             self.iface.messageBar().pushMessage("", "Invalid coordinate: {}".format(e), level=Qgis.Warning, duration=4)
