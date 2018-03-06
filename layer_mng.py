@@ -59,7 +59,6 @@ class LayerMng(object):
 
         if type_geometry == GeometryTypes.LINE:
             # set color
-            # symbols = vl.rendererV2().symbols()
             render_ctx = QgsRenderContext()
             renderer = vl.renderer()
             symbols = renderer.symbols(render_ctx)
@@ -77,7 +76,6 @@ class LayerMng(object):
 
     @staticmethod
     def remove_layer(layer_name):
-        # lrs = QgsMapLayerRegistry.instance().mapLayers()
         lrs = QgsProject.instance().mapLayers()
         for i in range(len(list(lrs.keys()))):
             if layer_name in list(lrs.keys())[i]:
