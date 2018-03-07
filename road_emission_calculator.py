@@ -128,8 +128,16 @@ class RoadEmissionCalculator(object):
 
         # matplolib generate lines in color sequence: blue, green, red, cyan, magenta, yellow, black, white
         # same color schema will be use for proposal roads
-        self.color_list = {0:[0, 0, 255], 1:[0, 255, 0], 2:[255, 0, 0], 3:[0, 255, 255],
-                           4:[255, 0, 255], 5:[255, 255, 0], 6:[0, 0, 0], 7:[255, 255, 255]}
+        self.color_list = {
+            0: [0, 0, 255],
+            1: [0, 255, 0],
+            2: [255, 0, 0],
+            3: [0, 255, 255],
+            4: [255, 0, 255],
+            5: [255, 255, 0],
+            6: [0, 0, 0],
+            7: [255, 255, 255]
+        }
 
         self.pollutants_checkboxes = {emission.PollutantTypes.CO: self.dlg.checkBoxCo,
                                       emission.PollutantTypes.NOx: self.dlg.checkBoxNox,
@@ -379,6 +387,7 @@ class RoadEmissionCalculator(object):
             type_category = emission.vehicles.Vehicle.get_type_for_category(self.dlg.cmbBoxVehicleType.currentText())
             if type_category == emission.vehicles.VehicleTypes.CAR:
                 vehicle = emission.vehicles.Car()
+
             if type_category == emission.vehicles.VehicleTypes.BUS or type_category == emission.vehicles.VehicleTypes.TRUCK:
                 if type_category == emission.vehicles.VehicleTypes.BUS:
                     vehicle = emission.vehicles.Bus()
@@ -387,8 +396,10 @@ class RoadEmissionCalculator(object):
                 vehicle.length = self.dlg.lineEditLength.text()
                 vehicle.height = self.dlg.lineEditHeight.text()
                 vehicle.load = float(self.dlg.cmbBoxLoad.currentText())
+
             if type_category == emission.vehicles.VehicleTypes.LCATEGORY:
                 vehicle = emission.vehicles.LCategory()
+
             if type_category == emission.vehicles.VehicleTypes.VAN:
                 vehicle = emission.vehicles.Van()
 
@@ -420,8 +431,6 @@ class RoadEmissionCalculator(object):
 
         if 'routes' in self.planner._json_data:
             self.show_roads()
-            # val = execute(self.iface, self.show_roads)
-            # print("return val: {}".format(val))
         else:
             self.add_error_to_list_widget("Unable to get a good response from web service.")
 
@@ -434,12 +443,18 @@ class RoadEmissionCalculator(object):
         self.dlg.cmbBoxSortBy.clear()
         routes = self.planner.routes
         pollutant_types = list(self.planner.pollutants.keys())
-        if len(routes) > 0:
+
+        if routes:
             self.dlg.cmbBoxSortBy.addItem("Distance")
             self.dlg.cmbBoxSortBy.addItem("Time")
             self.dlg.cmbBoxSortBy.addItems(pollutant_types)
             for route in routes:
-                self.layer_mng.create_layer(route.path, layer_mng.LayerNames.ROUTE, layer_mng.GeometryTypes.LINE, 2, route.id, self.color_list)
+                self.layer_mng.create_layer(route.path,
+                                            layer_mng.LayerNames.ROUTE,
+                                            layer_mng.GeometryTypes.LINE,
+                                            2,
+                                            route.id,
+                                            self.color_list)
             self.sort_routes_by_selection()
             self.show_pollutants_in_graph()
 
