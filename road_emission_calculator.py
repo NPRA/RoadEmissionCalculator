@@ -528,13 +528,20 @@ class RoadEmissionCalculator(object):
              Selected route will be add to the legend on the top of all layers."""
         if self.dlg.listWidget.currentItem():
             route_item = self.dlg.listWidget.itemWidget(self.dlg.listWidget.currentItem())
+
             if (route_item.route_id == self.selected_route_id):
                 self.clear_selection()
                 return
+
             self.layer_mng.remove_layer(layer_mng.LayerNames.SELECTED)
             self.selected_route_id = route_item.route_id
             route = self.planner.routes[route_item.route_id]
-            self.layer_mng.create_layer(route.path, layer_mng.LayerNames.SELECTED, layer_mng.GeometryTypes.LINE, 4, route.id, self.color_list)
+            self.layer_mng.create_layer(route.path,
+                                        layer_mng.LayerNames.SELECTED,
+                                        layer_mng.GeometryTypes.LINE,
+                                        4,
+                                        route.id,
+                                        self.color_list)
 
     # Deselect route from listWidget
     def clear_selection(self):
@@ -547,13 +554,15 @@ class RoadEmissionCalculator(object):
         routes = self.planner.routes
         self.dlg.listWidget.clear()
         self.clear_selection()
-        if len(routes) > 0 and self.dlg.cmbBoxSortBy.count() > 0:
+
+        if routes and self.dlg.cmbBoxSortBy.count() > 0:
             if self.dlg.cmbBoxSortBy.currentText() == "Distance":
                 sorted_by = sorted(routes, key=lambda x: x.distance)
             elif self.dlg.cmbBoxSortBy.currentText() == "Time":
                 sorted_by = sorted(routes, key=lambda x: x.minutes)
             else:
                 sorted_by = sorted(routes, key=lambda x: x.total_emission(self.dlg.cmbBoxSortBy.currentText()))
+
             for r in sorted_by:
                 self.add_route_item_to_list_widget(r)
 
@@ -568,11 +577,16 @@ class RoadEmissionCalculator(object):
         myQCustomQWidget = TheWidgetItem()
         myQCustomQWidget.set_route_name("Route" + str(route.id + 1), self.color_list[route.id])
         myQCustomQWidget.set_route_id(route.id)
-        myQCustomQWidget.set_distance_time(str(distance) + " km", str(hours) + " hours and " + str(
-            minutes) + " minutes.")
+        # myQCustomQWidget.set_distance_time(str(distance) + " km", str(hours) + " hours and " + str(
+        #     minutes) + " minutes.")
+        myQCustomQWidget.set_distance_time(
+            "{} km".format(distance),
+            "{} hours and {} minutes.".format(hours, minutes))
         myQCustomQWidget.hide_all_lbl_pollutants()
+
         for idxPlt, pt in enumerate(pollutant_types):
             myQCustomQWidget.set_pollutants(idxPlt, pt, round(route.total_emission(pt), 2))
+
         myQListWidgetItem = QListWidgetItem(self.dlg.listWidget)
         myQListWidgetItem.setSizeHint(myQCustomQWidget.sizeHint())
         self.dlg.listWidget.addItem(myQListWidgetItem)
@@ -580,8 +594,7 @@ class RoadEmissionCalculator(object):
         self.dlg.listWidget.setStyleSheet("""
                                         QListWidget:item:selected:active {
                                              background-color:rgb(230, 230, 230);
-                                        }
-                                        """)
+                                        }""")
 
     # If emission library return fail add error info as a item to listWidget
     def add_error_to_list_widget(self, error_msg):
@@ -619,7 +632,7 @@ class RoadEmissionCalculator(object):
         """Add fuels to combo box (cmbBoxFuelType). Available fuels are filtered by selected vehicle type."""
         self.dlg.cmbBoxFuelType.clear()
         if self.get_selected_category() is not None:
-            print ("Category: {}".format(self.get_selected_category()))
+            # print ("Category: {}".format(self.get_selected_category()))
             filtred_fuels = list(emission.models.filter_parms(cat=self.get_selected_category()))
             self.fuels = set(x.fuel for x in filtred_fuels)
             list_fuels = (list([fuel.name for fuel in self.fuels]))
