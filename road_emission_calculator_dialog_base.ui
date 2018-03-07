@@ -380,7 +380,7 @@
     </rect>
    </property>
    <property name="title">
-    <string>Route paramters</string>
+    <string>Route parameters</string>
    </property>
    <layout class="QGridLayout" name="gridLayout_11">
     <property name="leftMargin">
@@ -566,7 +566,7 @@
            </size>
           </property>
           <property name="text">
-           <string>End Point:</string>
+           <string>End point:</string>
           </property>
          </widget>
         </item>
