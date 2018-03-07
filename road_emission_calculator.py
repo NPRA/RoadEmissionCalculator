@@ -575,10 +575,8 @@ class RoadEmissionCalculator(object):
         minutes = int(minutes)
 
         myQCustomQWidget = TheWidgetItem()
-        myQCustomQWidget.set_route_name("Route" + str(route.id + 1), self.color_list[route.id])
+        myQCustomQWidget.set_route_name("Route{}".format(route.id + 1), self.color_list[route.id])
         myQCustomQWidget.set_route_id(route.id)
-        # myQCustomQWidget.set_distance_time(str(distance) + " km", str(hours) + " hours and " + str(
-        #     minutes) + " minutes.")
         myQCustomQWidget.set_distance_time(
             "{} km".format(distance),
             "{} hours and {} minutes.".format(hours, minutes))
@@ -632,7 +630,6 @@ class RoadEmissionCalculator(object):
         """Add fuels to combo box (cmbBoxFuelType). Available fuels are filtered by selected vehicle type."""
         self.dlg.cmbBoxFuelType.clear()
         if self.get_selected_category() is not None:
-            # print ("Category: {}".format(self.get_selected_category()))
             filtred_fuels = list(emission.models.filter_parms(cat=self.get_selected_category()))
             self.fuels = set(x.fuel for x in filtred_fuels)
             list_fuels = (list([fuel.name for fuel in self.fuels]))
