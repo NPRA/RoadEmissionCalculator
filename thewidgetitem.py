@@ -26,7 +26,7 @@ import os
 import sys
 
 from qgis.PyQt import QtGui, uic
-from qgis.PyQt.QtWidgets import QWidget
+from qgis.PyQt.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'thewidgetitem.ui'))
@@ -42,9 +42,9 @@ class TheWidgetItem(QWidget, FORM_CLASS):
 
         self.labels = [self.lblPlt1, self.lblPlt2, self.lblPlt3, self.lblPlt4, self.lblPlt5, self.lblPlt6]
 
-        self.textQVBoxLayout = QtGui.QVBoxLayout()
-        self.allQHBoxLayout = QtGui.QHBoxLayout()
-        verticalSpacer = QtGui.QSpacerItem(0, 70, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.textQVBoxLayout = QVBoxLayout()
+        self.allQHBoxLayout = QHBoxLayout()
+        verticalSpacer = QSpacerItem(0, 70, QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.textQVBoxLayout.addItem(verticalSpacer)
         self.allQHBoxLayout.addLayout(self.textQVBoxLayout)
         self.route_id = -1

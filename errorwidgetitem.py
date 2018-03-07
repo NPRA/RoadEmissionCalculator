@@ -22,8 +22,8 @@
 """
 
 import os
-from qgis.PyQt import QtGui, uic
-from qgis.PyQt.QtWidgets import QWidget
+from qgis.PyQt import uic
+from qgis.PyQt.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'errorwidgetitem.ui'))
@@ -36,9 +36,9 @@ class ErrorWidgetItem(QWidget, FORM_CLASS):
 
         self.setupUi(self)
 
-        self.textQVBoxLayout = QtGui.QVBoxLayout()
-        self.allQHBoxLayout = QtGui.QHBoxLayout()
-        verticalSpacer = QtGui.QSpacerItem(0, 70, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.textQVBoxLayout = QVBoxLayout()
+        self.allQHBoxLayout = QHBoxLayout()
+        verticalSpacer = QSpacerItem(0, 70, QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.textQVBoxLayout.addItem(verticalSpacer)
         self.allQHBoxLayout.addLayout(self.textQVBoxLayout)
         self.route_id = -1

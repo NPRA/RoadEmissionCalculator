@@ -25,14 +25,15 @@ from __future__ import absolute_import
 from builtins import str
 from builtins import range
 from builtins import object
-from qgis.PyQt.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt, QVariant, QObject
-from qgis.PyQt.QtWidgets import QAction, QWidget, QListWidget, QListWidgetItem, QDialogButtonBox
+from qgis.PyQt.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt
+from qgis.PyQt.QtWidgets import QAction, QListWidgetItem
 from qgis.PyQt.QtGui import QIcon, QColor
 # from qgis.core import QGis
 from qgis.core import QgsWkbTypes
 from qgis.core import QgsCoordinateTransform, QgsRectangle, QgsPoint, QgsGeometry, QgsCoordinateReferenceSystem
 from qgis.gui import QgsRubberBand
 from .Overlay import Overlay
+from .WaitingSpinnerWidget import QtWaitingSpinner
 
 from .copyLatLonTool import CopyLatLonTool
 from .settings import SettingsWidget
@@ -75,6 +76,7 @@ from . import resources
 from .road_emission_calculator_dialog import RoadEmissionCalculatorDialog
 from .layer_mng import LayerMng
 from . import layer_mng
+
 
 class RoadEmissionCalculator(object):
     """QGIS Plugin Implementation."""
@@ -126,8 +128,16 @@ class RoadEmissionCalculator(object):
 
         # matplolib generate lines in color sequence: blue, green, red, cyan, magenta, yellow, black, white
         # same color schema will be use for proposal roads
-        self.color_list = {0:[0, 0, 255], 1:[0, 255, 0], 2:[255, 0, 0], 3:[0, 255, 255],
-                           4:[255, 0, 255], 5:[255, 255, 0], 6:[0, 0, 0], 7:[255, 255, 255]}
+        self.color_list = {
+            0: [0, 0, 255],
+            1: [0, 255, 0],
+            2: [255, 0, 0],
+            3: [0, 255, 255],
+            4: [255, 0, 255],
+            5: [255, 255, 0],
+            6: [0, 0, 0],
+            7: [255, 255, 255]
+        }
 
         self.pollutants_checkboxes = {emission.PollutantTypes.CO: self.dlg.checkBoxCo,
                                       emission.PollutantTypes.NOx: self.dlg.checkBoxNox,
@@ -148,10 +158,11 @@ class RoadEmissionCalculator(object):
         self.dlg.lineEditLength.textChanged.connect(self.remove_route_layers)
 
         # Widget loading overlay
-        self.dlg.widgetLoading.setShown(False)
-        self.overlay = Overlay(self.dlg.widgetLoading)
-        self.overlay.resize(785,470)
-        self.overlay.hide()
+        self.dlg.widgetLoading.setVisible(False)
+        self.overlay = QtWaitingSpinner(parent=self.dlg.widgetLoading)
+        #self.overlay = Overlay(self.dlg.widgetLoading)
+        # self.overlay.resize(785, 470)
+        #self.overlay.hide()
 
         # Road Emission Planner Thread
         self.road_emission_planner_thread = RoadEmissionPlannerThread()
@@ -362,6 +373,7 @@ class RoadEmissionCalculator(object):
     def on_road_emission_planner_start(self):
         """Start calculate emission when click on 'Calculate Emission' button. If planner is not None and 'Show result in
                 graph' has been checked afterward graph(s) with selected pollutant(s) will be presented."""
+
         if self.planner:
             self.show_pollutants_in_graph()
         else:
@@ -375,6 +387,7 @@ class RoadEmissionCalculator(object):
             type_category = emission.vehicles.Vehicle.get_type_for_category(self.dlg.cmbBoxVehicleType.currentText())
             if type_category == emission.vehicles.VehicleTypes.CAR:
                 vehicle = emission.vehicles.Car()
+
             if type_category == emission.vehicles.VehicleTypes.BUS or type_category == emission.vehicles.VehicleTypes.TRUCK:
                 if type_category == emission.vehicles.VehicleTypes.BUS:
                     vehicle = emission.vehicles.Bus()
@@ -382,9 +395,11 @@ class RoadEmissionCalculator(object):
                     vehicle = emission.vehicles.Truck()
                 vehicle.length = self.dlg.lineEditLength.text()
                 vehicle.height = self.dlg.lineEditHeight.text()
-                vehicle.load = self.dlg.cmbBoxLoad.currentText()
+                vehicle.load = float(self.dlg.cmbBoxLoad.currentText())
+
             if type_category == emission.vehicles.VehicleTypes.LCATEGORY:
                 vehicle = emission.vehicles.LCategory()
+
             if type_category == emission.vehicles.VehicleTypes.VAN:
                 vehicle = emission.vehicles.Van()
 
@@ -400,33 +415,46 @@ class RoadEmissionCalculator(object):
                     self.planner.add_pollutant(x)
 
             self.dlg.listWidget.clear()
-            self.dlg.widgetLoading.setShown(True)
-            self.overlay.show()
+            self.dlg.widgetLoading.setVisible(True)
+            self.overlay.start()
+
+            # Add planner and start QThread
             self.road_emission_planner_thread.set_planner(self.planner)
             self.road_emission_planner_thread.start()
 
     # RoadEmissionPlanner finished emission calculation
-    def on_road_emission_planner_finished(self):
-        self.overlay.hide()
+    def on_road_emission_planner_finished(self, err=None):
         self.layer_mng.remove_layer(layer_mng.LayerNames.ROUTE)
-        self.dlg.widgetLoading.setShown(False)
+
+        if not hasattr(self.planner, '_json_data'):
+            self.add_error_to_list_widget("Missing JSON data from web service.")
+
         if 'routes' in self.planner._json_data:
             self.show_roads()
         else:
             self.add_error_to_list_widget("Unable to get a good response from web service.")
 
+        self.overlay.stop()
+        self.dlg.widgetLoading.setVisible(False)
+
     # Present roads in map and possibly show results in graph(s)
     def show_roads(self):
-        self.planner._calculate_emissions()
+        # self.planner._calculate_emissions()
         self.dlg.cmbBoxSortBy.clear()
         routes = self.planner.routes
         pollutant_types = list(self.planner.pollutants.keys())
-        if len(routes) > 0:
+
+        if routes:
             self.dlg.cmbBoxSortBy.addItem("Distance")
             self.dlg.cmbBoxSortBy.addItem("Time")
             self.dlg.cmbBoxSortBy.addItems(pollutant_types)
             for route in routes:
-                self.layer_mng.create_layer(route.path, layer_mng.LayerNames.ROUTE, layer_mng.GeometryTypes.LINE, 2, route.id, self.color_list)
+                self.layer_mng.create_layer(route.path,
+                                            layer_mng.LayerNames.ROUTE,
+                                            layer_mng.GeometryTypes.LINE,
+                                            2,
+                                            route.id,
+                                            self.color_list)
             self.sort_routes_by_selection()
             self.show_pollutants_in_graph()
 
@@ -500,13 +528,20 @@ class RoadEmissionCalculator(object):
              Selected route will be add to the legend on the top of all layers."""
         if self.dlg.listWidget.currentItem():
             route_item = self.dlg.listWidget.itemWidget(self.dlg.listWidget.currentItem())
+
             if (route_item.route_id == self.selected_route_id):
                 self.clear_selection()
                 return
+
             self.layer_mng.remove_layer(layer_mng.LayerNames.SELECTED)
             self.selected_route_id = route_item.route_id
             route = self.planner.routes[route_item.route_id]
-            self.layer_mng.create_layer(route.path, layer_mng.LayerNames.SELECTED, layer_mng.GeometryTypes.LINE, 4, route.id, self.color_list)
+            self.layer_mng.create_layer(route.path,
+                                        layer_mng.LayerNames.SELECTED,
+                                        layer_mng.GeometryTypes.LINE,
+                                        4,
+                                        route.id,
+                                        self.color_list)
 
     # Deselect route from listWidget
     def clear_selection(self):
@@ -519,13 +554,15 @@ class RoadEmissionCalculator(object):
         routes = self.planner.routes
         self.dlg.listWidget.clear()
         self.clear_selection()
-        if len(routes) > 0 and self.dlg.cmbBoxSortBy.count() > 0:
+
+        if routes and self.dlg.cmbBoxSortBy.count() > 0:
             if self.dlg.cmbBoxSortBy.currentText() == "Distance":
                 sorted_by = sorted(routes, key=lambda x: x.distance)
             elif self.dlg.cmbBoxSortBy.currentText() == "Time":
                 sorted_by = sorted(routes, key=lambda x: x.minutes)
             else:
                 sorted_by = sorted(routes, key=lambda x: x.total_emission(self.dlg.cmbBoxSortBy.currentText()))
+
             for r in sorted_by:
                 self.add_route_item_to_list_widget(r)
 
@@ -538,13 +575,16 @@ class RoadEmissionCalculator(object):
         minutes = int(minutes)
 
         myQCustomQWidget = TheWidgetItem()
-        myQCustomQWidget.set_route_name("Route" + str(route.id + 1), self.color_list[route.id])
+        myQCustomQWidget.set_route_name("Route{}".format(route.id + 1), self.color_list[route.id])
         myQCustomQWidget.set_route_id(route.id)
-        myQCustomQWidget.set_distance_time(str(distance) + " km", str(hours) + " hours and " + str(
-            minutes) + " minutes.")
+        myQCustomQWidget.set_distance_time(
+            "{} km".format(distance),
+            "{} hours and {} minutes.".format(hours, minutes))
         myQCustomQWidget.hide_all_lbl_pollutants()
+
         for idxPlt, pt in enumerate(pollutant_types):
             myQCustomQWidget.set_pollutants(idxPlt, pt, round(route.total_emission(pt), 2))
+
         myQListWidgetItem = QListWidgetItem(self.dlg.listWidget)
         myQListWidgetItem.setSizeHint(myQCustomQWidget.sizeHint())
         self.dlg.listWidget.addItem(myQListWidgetItem)
@@ -552,8 +592,7 @@ class RoadEmissionCalculator(object):
         self.dlg.listWidget.setStyleSheet("""
                                         QListWidget:item:selected:active {
                                              background-color:rgb(230, 230, 230);
-                                        }
-                                        """)
+                                        }""")
 
     # If emission library return fail add error info as a item to listWidget
     def add_error_to_list_widget(self, error_msg):
@@ -591,7 +630,6 @@ class RoadEmissionCalculator(object):
         """Add fuels to combo box (cmbBoxFuelType). Available fuels are filtered by selected vehicle type."""
         self.dlg.cmbBoxFuelType.clear()
         if self.get_selected_category() is not None:
-            print ("Category: {}".format(self.get_selected_category()))
             filtred_fuels = list(emission.models.filter_parms(cat=self.get_selected_category()))
             self.fuels = set(x.fuel for x in filtred_fuels)
             list_fuels = (list([fuel.name for fuel in self.fuels]))
@@ -716,6 +754,7 @@ class RoadEmissionCalculator(object):
             'Show results in graph' will be updated."""
         self.remove_all_memory_layers()
         self.dlg.listWidget.clear()
+
         settings_json_file = os.path.join(os.path.dirname(__file__), 'settings.json')
         if os.path.isfile(settings_json_file):
             settings_data = json.load(open(settings_json_file))
@@ -758,6 +797,10 @@ class RoadEmissionCalculator(object):
             self.dlg.checkBoxVoc.setChecked(settings_data["voc"])
             self.dlg.checkBoxCh4.setChecked(settings_data["ch4"])
             self.dlg.checkBoxPmExhaust.setChecked(settings_data["pm"])
+
+        # from qgis.PyQt.QtCore import QTimer
+        # self.dlg.widgetLoading.setVisible(False)
+        # QTimer.singleShot(4000, self.overlay.stop)
 
     @staticmethod
     def get_object_from_array_by_name(array, name):
@@ -818,6 +861,6 @@ class RoadEmissionCalculator(object):
             # substitute with your code.
             self.canvas.unsetMapTool(self.mapTool)
         else:
-            self.dlg.widgetLoading.setShown(False)
+            self.dlg.widgetLoading.setVisible(False)
             self.overlay.hide()
             self.remove_all_memory_layers()

@@ -3,7 +3,7 @@ import math
 # from qgis.PyQt.QtCore import Qt, QTimer
 from qgis.PyQt.QtGui import QPalette, QPainter, QBrush, QColor, QPen
 from qgis.PyQt.QtWidgets import QWidget
-# from qgis.PyQt import QtGui, uic, QtCore
+from qgis.PyQt.QtCore import Qt
 
 
 class Overlay(QWidget):
@@ -46,6 +46,7 @@ class Overlay(QWidget):
         # if self.counter == 60:
         #     self.killTimer(self.timer)
         #     self.hide()
+
     def hideEvent(self, event):
         self.killTimer(self.timer)
         self.hide()
