@@ -13,18 +13,39 @@ This python plugin calculate emissions for selected roads. The plugin using exte
 Download/Install
 ----------------
 
-For using the plugin you should download RoadEmissionCalculator project to QGIS3 folder.
+For using the plugin you should download RoadEmissionCalculator plugin from the "Manage and Install Plugins" option in the QGIS3 application. 
 
-Windows
-> %userprofile%\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins
+If you want to make changes to the code and install a "local" version you can either do a manually deployment or create a deployment ZIP file 
+from your command line. You need to install the [pb_tool](https://pypi.python.org/pypi/pb_tool/). This is a "plugin build tool" for QGIS development.
 
-Linux
-> $HOME/.local/share/QGIS/QGIS3/profiles/default/python/plugins
 
-Mac
-> $HOME/.local/share/QGIS/QGIS3/profiles/default/python/plugins
+#### Manually deployment
 
-Open the QGIS. You will notice that there is a new icon in the toolbar and a new menu entry. Select it to lunch the plugin dialog.
+After installing the tool you need to stand in the root of the "RoadEmissionCalculator" folder (where 'metadata.txt' is located). Then type:
+```
+$ pb_tool deploy
+```
+
+pb_tool will then compile the UI and resource files, build docs and deploy the code to your QGIS3 installation.
+
+
+#### Create deployment package (zip file)
+
+You need to stand in the root of the "RoadEmissionCalculator" folder (where 'metadata.txt' is located). Then type:
+```
+$ pb_tool zip
+```
+
+A new file named 'RoadEmissionCalculator.zip' is now created in your current working directory. You can install this
+plugin in QGIS3 inside the "Manage and Install Plugins" option. You should see an "Install from ZIP" option on the
+left side of the "Manage and Install Plugins". Simply point it to your newly created ZIP file and install the plugin.
+
+You should be good to go!
+
+
+Have fun and play hard!
+
+
  
 Description
 -----------
