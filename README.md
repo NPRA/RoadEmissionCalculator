@@ -3,7 +3,7 @@ RoadEmissionCalculator
 
 [![License](https://img.shields.io/badge/license-BSD-brightgreen.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.5-blue.svg)](https://github.com/NPRA/RoadEmissionCalculator)
-[![GitHub release](https://img.shields.io/github/release/Naereen/StrapDown.js.svg)](https://github.com/NPRA/RoadEmissionCalculator/releases/)
+[![GitHub release](https://img.shields.io/github/release/NPRA/RoadEmissionCalculator.svg)](https://github.com/NPRA/RoadEmissionCalculator/releases/)
 [![GitHub Ïssues](https://img.shields.io/github/issues-raw/NPRA/RoadEmissionCalculator/good-first-issue.svg)](https://github.com/NPRA/RoadEmissionCalculator/issues/)
 
 
