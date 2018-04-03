@@ -31,7 +31,7 @@ changelog:
     * Calculate emission(s) for personal cars.
 
 # Tags are comma separated with spaces allowed
-tags=QGIS
+tags=QGIS,Norway,Emission,Road
 
 homepage=https://github.com/NPRA/RoadEmissionCalculator.git
 category=Vector
